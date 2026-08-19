@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indoor Football Index — Team Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --arena-black:#111316; --arena-black-2:#1a1d21; --crimson:#D4263A; --amber:#E8A33D;
+    --turf:#3C6E47; --chalk:#F2EFE6; --chalk-dim:#c9c6bc; --steel:#82868c;
+    --steel-line:#2a2d31; --card:#1c1f23; --card-line:#2e3136;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--arena-black); color:var(--chalk); font-family:'Inter',system-ui,sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .wrap{max-width:900px; margin:0 auto; padding:36px 24px 80px;}
+  header{margin-bottom:28px;}
+  header .eyebrow{font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--crimson); font-weight:600; margin:0 0 8px;}
+  header h1{font-size:28px; margin:0 0 6px;}
+  header p{color:var(--steel); font-size:14px; margin:0; max-width:620px; line-height:1.6;}
+
+  .dropzone{
+    border:1px dashed var(--card-line); border-radius:12px; padding:36px 24px; text-align:center;
+    background:var(--card); cursor:pointer; transition:border-color .15s;
+  }
+  .dropzone:hover, .dropzone.drag{border-color:var(--crimson);}
+  .dropzone p{margin:6px 0; color:var(--steel); font-size:14px;}
+  .dropzone .filename{color:var(--amber); font-family:'IBM Plex Mono',monospace; font-size:13px; margin-top:10px;}
+  input[type=file]{display:none;}
+
+  .panel{
+    background:var(--card); border:1px solid var(--card-line); border-radius:10px;
+    padding:24px; margin-top:24px; display:none;
+  }
+  .panel.show{display:block;}
+  .panel h2{font-size:16px; margin:0 0 4px;}
+  .panel .sub{color:var(--steel); font-size:12px; margin:0 0 20px;}
+
+  label{display:block; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin:16px 0 6px;}
+  label:first-of-type{margin-top:0;}
+  input[type=text], textarea{
+    width:100%; background:var(--arena-black-2); border:1px solid var(--card-line); border-radius:6px;
+    color:var(--chalk); padding:10px 12px; font-family:'Inter',sans-serif; font-size:14px;
+  }
+  textarea{min-height:90px; resize:vertical; line-height:1.5;}
+  input[type=text]:focus, textarea:focus{outline:1px solid var(--crimson); border-color:var(--crimson);}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:0 20px;}
+  @media (max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+  .row-list{margin-top:10px;}
+  .row-item{
+    display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:center; margin-bottom:8px;
+  }
+  .row-item.rec-row{grid-template-columns:1.4fr 1fr 0.7fr auto;}
+  .row-item input{margin:0;}
+  .row-item button, .add-row button{
+    background:var(--arena-black-2); border:1px solid var(--card-line); color:var(--steel);
+    border-radius:6px; padding:9px 12px; cursor:pointer; font-size:13px; font-family:'IBM Plex Mono',monospace;
+  }
+  .row-item button:hover{border-color:var(--crimson); color:var(--chalk);}
+  .add-row{margin-top:8px;}
+  .add-row button{color:var(--amber); border-color:var(--amber); background:rgba(232,163,61,0.08);}
+
+  .col-labels{display:grid; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel); margin-bottom:4px;}
+  .col-labels.coach{grid-template-columns:1fr 1fr auto;}
+  .col-labels.rec{grid-template-columns:1.4fr 1fr 0.7fr auto;}
+
+  .actions{margin-top:32px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+  .btn-primary{
+    background:var(--crimson); color:var(--chalk); border:none; border-radius:8px;
+    padding:13px 22px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .btn-primary:hover{background:#b81f31;}
+  .status{font-size:13px; color:var(--turf); font-family:'IBM Plex Mono',monospace;}
+
+  .scope-note{
+    margin-top:28px; padding:16px 18px; border:1px dashed var(--card-line); border-radius:10px;
+    font-size:13px; color:var(--steel); line-height:1.6;
+  }
+  .scope-note b{color:var(--chalk-dim);}
+  .fsa-note{font-size:12px; color:var(--steel); margin:10px 2px 0;}
+  .fsa-note.live{color:var(--turf);}
+  .save-indicator{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; font-family:'IBM Plex Mono',monospace;
+    color:var(--steel);
+  }
+  .save-indicator .dot{width:7px; height:7px; border-radius:50%; background:var(--steel); transition:background .2s;}
+  .save-indicator.saving .dot{background:var(--amber);}
+  .save-indicator.saved .dot{background:var(--turf);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Indoor Football Index</p>
+    <h1>Team sheet admin</h1>
+    <p>Load a team workbook, edit the franchise info and record book in a normal form, then download the updated file. Nothing leaves your browser — the file is never uploaded anywhere.</p>
+  </header>
+
+  <div class="dropzone" id="dropzone">
+    <p><strong>Click to choose a file</strong> or drag an .xlsx here</p>
+    <p>Must follow the standard team sheet format (Team Info, Player Stats, Game History, Roster, Franchise Record Holders)</p>
+    <div class="filename" id="filename"></div>
+    <input type="file" id="fileInput" accept=".xlsx">
+  </div>
+  <p class="fsa-note" id="fsaNote"></p>
+
+  <div class="panel" id="teamInfoPanel">
+    <h2>Team info</h2>
+    <p class="sub">These fields feed the hero section, history copy, and coaching timeline on the team page.</p>
+
+    <div class="grid2">
+      <div>
+        <label>Team name</label>
+        <input type="text" id="f-teamname">
+        <label>Years</label>
+        <input type="text" id="f-years" placeholder="e.g. 2019-present">
+        <label>League history</label>
+        <input type="text" id="f-league">
+        <label>Stadium history</label>
+        <input type="text" id="f-stadium">
+      </div>
+      <div>
+        <label>Playoff appearances</label>
+        <input type="text" id="f-playoffs" placeholder="comma-separated years">
+        <label>Regular season record</label>
+        <input type="text" id="f-regrecord" placeholder="e.g. 44-50">
+        <label>Postseason record</label>
+        <input type="text" id="f-postrecord" placeholder="e.g. 3-3">
+        <label>All-time record</label>
+        <input type="text" id="f-record" placeholder="e.g. 47-53">
+        <label>Championships</label>
+        <input type="text" id="f-championships" placeholder="e.g. 0">
+      </div>
+    </div>
+
+    <label>Current logo URL</label>
+    <input type="text" id="f-logo">
+    <label>Team history</label>
+    <textarea id="f-history"></textarea>
+
+    <label>Coaching history</label>
+    <div class="col-labels coach"><span>Name</span><span>Tenure</span><span></span></div>
+    <div class="row-list" id="coachList"></div>
+    <div class="add-row"><button type="button" id="addCoach">+ Add coach</button></div>
+  </div>
+
+  <div class="panel" id="recordsPanel">
+    <h2>Franchise record holders</h2>
+    <p class="sub">Feeds the Franchise Records table, sorted automatically into Offense / Defense / Special teams by keyword.</p>
+
+    <div class="col-labels rec"><span>Record</span><span>Holder</span><span>Total</span><span></span></div>
+    <div class="row-list" id="recordList"></div>
+    <div class="add-row"><button type="button" id="addRecord">+ Add record</button></div>
+  </div>
+
+  <div class="actions" id="actions" style="display:none;">
+    <button class="btn-primary" id="downloadBtn">Download updated .xlsx</button>
+    <span class="save-indicator" id="saveIndicator" style="display:none;">
+      <span class="dot"></span><span id="saveIndicatorText">Auto-save on</span>
+    </span>
+    <span class="status" id="statusMsg"></span>
+  </div>
+
+  <div class="scope-note">
+    <b>What this tool edits:</b> Team Info and Franchise Record Holders only. <b>Player Stats, Game History, and Roster</b> are bulk box-score data — those stay exactly as they are in the file you loaded, so keep editing those the way you already do (Google Sheets / Excel) and load the file here afterward if you also need to touch team info or records.
+  </div>
+</div>
+
+<script>
+  var workbook = null;
+  var fileHandle = null;
+  var supportsFSA = 'showOpenFilePicker' in window;
+  var TEAM_INFO_FIELDS = [
+    ["Team Name","f-teamname"], ["Years","f-years"], ["League History","f-league"],
+    ["Stadium History","f-stadium"], ["Playoff appearances","f-playoffs"],
+    ["Reg. Record","f-regrecord"], ["Post. Record","f-postrecord"], ["Record","f-record"],
+    ["Championships","f-championships"],
+    ["Current Logo","f-logo"], ["Team History","f-history"]
+  ];
+
+  var fsaNote = document.getElementById('fsaNote');
+  fsaNote.textContent = supportsFSA
+    ? "This browser supports saving directly back into the original file — edits will auto-save as you type."
+    : "This browser (Firefox/Safari) can't write back to the original file, so use the download button below and replace the file manually. Chrome or Edge will auto-save in place instead.";
+
+  var dropzone = document.getElementById('dropzone');
+  var fileInput = document.getElementById('fileInput');
+  var filenameEl = document.getElementById('filename');
+
+  dropzone.addEventListener('click', function(){
+    if(supportsFSA){ pickFileFSA(); } else { fileInput.click(); }
+  });
+  dropzone.addEventListener('dragover', function(e){ e.preventDefault(); dropzone.classList.add('drag'); });
+  dropzone.addEventListener('dragleave', function(){ dropzone.classList.remove('drag'); });
+  dropzone.addEventListener('drop', async function(e){
+    e.preventDefault(); dropzone.classList.remove('drag');
+    var items = e.dataTransfer.items;
+    if(supportsFSA && items && items.length && items[0].getAsFileSystemHandle){
+      var handle = await items[0].getAsFileSystemHandle();
+      if(handle.kind === 'file'){ fileHandle = handle; var file = await handle.getFile(); loadFile(file); return; }
+    }
+    if(e.dataTransfer.files.length){ fileHandle = null; loadFile(e.dataTransfer.files[0]); }
+  });
+  fileInput.addEventListener('change', function(){
+    if(fileInput.files.length){ fileHandle = null; loadFile(fileInput.files[0]); }
+  });
+
+  async function pickFileFSA(){
+    try{
+      var handles = await window.showOpenFilePicker({
+        types: [{description:'Excel workbook', accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}]
+      });
+      fileHandle = handles[0];
+      var file = await fileHandle.getFile();
+      loadFile(file);
+    } catch(err){
+      // user canceled the picker — no-op
+    }
+  }
+
+  function loadFile(file){
+    filenameEl.textContent = file.name;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var data = new Uint8Array(e.target.result);
+      workbook = XLSX.read(data, {type:'array', cellDates:true});
+      populateForm();
+      document.getElementById('teamInfoPanel').classList.add('show');
+      document.getElementById('recordsPanel').classList.add('show');
+      document.getElementById('actions').style.display = 'flex';
+      var indicator = document.getElementById('saveIndicator');
+      if(fileHandle){
+        indicator.style.display = 'inline-flex';
+        document.getElementById('saveIndicatorText').textContent = 'Auto-save on \u2014 editing "' + file.name + '" directly';
+      } else {
+        indicator.style.display = 'none';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function sheetToRows(sheetName){
+    var ws = workbook.Sheets[sheetName];
+    if(!ws) return [];
+    return XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+  }
+
+  function populateForm(){
+    var rows = sheetToRows('Team Info');
+    var headers = rows[0] || [];
+    var data = rows[1] || [];
+    var info = {};
+    headers.forEach(function(h, i){ if(h) info[h] = data[i]; });
+
+    TEAM_INFO_FIELDS.forEach(function(pair){
+      var key = pair[0], id = pair[1];
+      var val = info[key];
+      if(val instanceof Date){ val = (val.getMonth()+1)+'-'+val.getDate(); }
+      document.getElementById(id).value = val != null ? val : '';
+    });
+
+    // Coach history -> rows
+    var coachStr = info['Coach History'] || '';
+    var coachList = document.getElementById('coachList');
+    coachList.innerHTML = '';
+    coachStr.split(',').forEach(function(part){
+      part = part.trim();
+      if(!part) return;
+      var m = part.match(/^(.*?)\s*\(([^)]+)\)$/);
+      addCoachRow(m ? m[1].trim() : part, m ? m[2].trim() : '');
+    });
+    if(coachList.children.length === 0) addCoachRow('', '');
+
+    // Franchise records -> rows
+    var recRows = sheetToRows('Franchise Record Holders');
+    var recList = document.getElementById('recordList');
+    recList.innerHTML = '';
+    for(var i=1; i<recRows.length; i++){
+      var r = recRows[i];
+      if(!r || !r[0]) continue;
+      addRecordRow(r[0]||'', r[1]||'', r[2]!=null ? r[2] : '');
+    }
+    if(recList.children.length === 0) addRecordRow('', '', '');
+  }
+
+  function addCoachRow(name, tenure){
+    var div = document.createElement('div');
+    div.className = 'row-item';
+    div.innerHTML = '<input type="text" class="coach-name" value="'+escAttr(name)+'" placeholder="Coach name">'
+      + '<input type="text" class="coach-tenure" value="'+escAttr(tenure)+'" placeholder="e.g. 2022-present">'
+      + '<button type="button" onclick="this.parentElement.remove()">Remove</button>';
+    document.getElementById('coachList').appendChild(div);
+  }
+  document.getElementById('addCoach').addEventListener('click', function(){ addCoachRow('',''); });
+
+  function addRecordRow(record, name, stat){
+    var div = document.createElement('div');
+    div.className = 'row-item rec-row';
+    div.innerHTML = '<input type="text" class="rec-label" value="'+escAttr(record)+'" placeholder="e.g. Most Passing Yards">'
+      + '<input type="text" class="rec-name" value="'+escAttr(name)+'" placeholder="Player name">'
+      + '<input type="text" class="rec-stat" value="'+escAttr(stat)+'" placeholder="Total">'
+      + '<button type="button" onclick="this.parentElement.remove()">Remove</button>';
+    document.getElementById('recordList').appendChild(div);
+  }
+  document.getElementById('addRecord').addEventListener('click', function(){ addRecordRow('','',''); });
+
+  function escAttr(s){
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  }
+
+  document.getElementById('downloadBtn').addEventListener('click', function(){
+    if(!workbook){ return; }
+    var wbout = rebuildWorkbookBytes();
+    var blob = new Blob([wbout], {type:'application/octet-stream'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = (document.getElementById('f-teamname').value || 'team-sheet').replace(/\s+/g,'_') + '_updated.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    var statusEl = document.getElementById('statusMsg');
+    statusEl.textContent = 'Downloaded ' + a.download;
+    setTimeout(function(){ statusEl.textContent = ''; }, 4000);
+  });
+
+  function rebuildWorkbookBytes(){
+    // Rebuild Team Info sheet (header row + one data row)
+    var headers = TEAM_INFO_FIELDS.map(function(p){ return p[0]; });
+    var values = TEAM_INFO_FIELDS.map(function(p){ return document.getElementById(p[1]).value; });
+    var origRows = sheetToRows('Team Info');
+    var origHeaders = origRows[0] || [];
+    var origData = origRows[1] || [];
+    var finalHeaders = origHeaders.slice();
+    var finalData = origData.slice();
+    headers.forEach(function(h, i){
+      var idx = finalHeaders.indexOf(h);
+      if(idx === -1){ finalHeaders.push(h); finalData.push(values[i]); }
+      else { finalData[idx] = values[i]; }
+    });
+    var coachParts = [];
+    document.querySelectorAll('#coachList .row-item').forEach(function(row){
+      var name = row.querySelector('.coach-name').value.trim();
+      var tenure = row.querySelector('.coach-tenure').value.trim();
+      if(name) coachParts.push(tenure ? (name+' ('+tenure+')') : name);
+    });
+    var coachIdx = finalHeaders.indexOf('Coach History');
+    if(coachIdx > -1) finalData[coachIdx] = coachParts.join(', ');
+
+    var newTeamInfoSheet = XLSX.utils.aoa_to_sheet([finalHeaders, finalData]);
+    workbook.Sheets['Team Info'] = newTeamInfoSheet;
+
+    var recAoA = [['Record','Name','Stat']];
+    document.querySelectorAll('#recordList .row-item').forEach(function(row){
+      var label = row.querySelector('.rec-label').value.trim();
+      var name = row.querySelector('.rec-name').value.trim();
+      var statRaw = row.querySelector('.rec-stat').value.trim();
+      if(!label) return;
+      var statVal = statRaw !== '' && !isNaN(statRaw) ? Number(statRaw) : statRaw;
+      recAoA.push([label, name, statVal]);
+    });
+    var newRecSheet = XLSX.utils.aoa_to_sheet(recAoA);
+    workbook.Sheets['Franchise Record Holders'] = newRecSheet;
+
+    return XLSX.write(workbook, {bookType:'xlsx', type:'array'});
+  }
+
+  // --- Auto-save: whenever a field changes and we have a live file handle,
+  // write the rebuilt workbook straight back into the original file. ---
+  var autoSaveTimer = null;
+  function scheduleAutoSave(){
+    if(!fileHandle || !workbook) return;
+    var indicator = document.getElementById('saveIndicator');
+    var textEl = document.getElementById('saveIndicatorText');
+    indicator.classList.add('saving'); indicator.classList.remove('saved');
+    textEl.textContent = 'Saving\u2026';
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(async function(){
+      try{
+        var bytes = rebuildWorkbookBytes();
+        var writable = await fileHandle.createWritable();
+        await writable.write(bytes);
+        await writable.close();
+        indicator.classList.remove('saving'); indicator.classList.add('saved');
+        var stamp = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        textEl.textContent = 'Saved to file \u00b7 ' + stamp;
+      } catch(err){
+        indicator.classList.remove('saving');
+        textEl.textContent = 'Auto-save failed \u2014 use Download instead';
+      }
+    }, 800);
+  }
+  document.addEventListener('input', function(e){
+    if(e.target.closest('#teamInfoPanel, #recordsPanel')) scheduleAutoSave();
+  });
+  document.addEventListener('click', function(e){
+    if(e.target.matches('.row-item button, .add-row button') && workbook) scheduleAutoSave();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teams — Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--arena-black); color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:1160px; margin:0 auto; padding:22px 24px 0;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:28px; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  main{max-width:1160px; margin:0 auto; padding:0 24px 60px;}
+
+  .hero{text-align:center; padding:52px 0 30px;}
+  .hero h1{font-size:clamp(38px,6vw,56px); margin:0 0 10px; color:var(--chalk);}
+  .hero p{font-size:15px; color:var(--steel); margin:0;}
+
+  .controls{display:flex; gap:12px; margin-bottom:28px; flex-wrap:wrap;}
+  .search-box{flex:1 1 320px; position:relative;}
+  .search-box input{
+    width:100%; background:var(--card); border:1px solid var(--card-line); border-radius:10px;
+    color:var(--chalk); padding:13px 16px 13px 42px; font-size:14px; font-family:'Inter',sans-serif;
+  }
+  .search-box input:focus{outline:1px solid var(--crimson); border-color:var(--crimson);}
+  .search-box input::placeholder{color:var(--steel);}
+  .search-box .icon{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--steel); font-size:14px;}
+
+  select.unit-select{
+    appearance:none; -webkit-appearance:none; background:var(--card); color:var(--chalk);
+    border:1px solid var(--card-line); border-radius:10px; padding:13px 38px 13px 16px;
+    font-family:'Inter',sans-serif; font-size:14px; cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%2382868c'/></svg>");
+    background-repeat:no-repeat; background-position:right 16px center;
+  }
+
+  .result-count{font-size:13px; color:var(--steel); margin-bottom:16px;}
+
+  .team-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  @media (max-width:1000px){.team-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.team-grid{grid-template-columns:1fr;}}
+
+  .team-card{
+    background:var(--card); border:1px solid var(--card-line); border-radius:12px; padding:18px;
+    transition:border-color .15s; display:flex; gap:14px;
+  }
+  .team-card:hover{border-color:var(--crimson);}
+  .team-logo{
+    width:64px; height:64px; flex-shrink:0; background:var(--arena-black-2); border-radius:8px;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .team-logo img{width:100%; height:100%; object-fit:contain; padding:8px;}
+  .team-logo .no-logo{font-size:9px; color:var(--steel); text-align:center; letter-spacing:0.03em;}
+  .team-info{min-width:0; flex:1;}
+  .team-name{font-size:15px; color:var(--chalk); font-weight:600; line-height:1.3; margin-bottom:3px;}
+  .team-meta{font-size:12px; color:var(--steel); margin-bottom:8px;}
+  .team-meta .league{color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .team-stats{display:flex; gap:12px; font-size:12px; flex-wrap:wrap;}
+  .team-stats .stat{color:var(--chalk-dim); font-family:'IBM Plex Mono',monospace;}
+  .team-stats .stat b{color:var(--chalk); font-weight:600;}
+  .champ-badge{
+    display:inline-flex; align-items:center; gap:3px; font-size:11px; color:var(--amber);
+    background:rgba(232,163,61,0.12); padding:2px 7px; border-radius:4px; margin-top:6px; font-weight:600;
+  }
+
+  .empty{padding:60px 24px; text-align:center; color:var(--steel);}
+
+  footer{max-width:1160px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);}
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><strong>Indoor Football Index</strong> / Teams</div>
+  <nav>
+    <a href="leagues.html">Leagues</a>
+    <a href="teams.html">Teams</a>
+    <a href="index.html#schedule">Schedule</a>
+    <a href="index.html#news">News</a>
+  </nav>
+</div>
+
+<main>
+  <div class="hero">
+    <h1 class="display">Teams</h1>
+    <p>Every indoor and arena football franchise on record &mdash; active and defunct.</p>
+  </div>
+
+  <div class="controls">
+    <div class="search-box">
+      <span class="icon">&#128269;</span>
+      <input type="text" id="search" placeholder="Search by team, league, or former name&hellip;">
+    </div>
+    <select class="unit-select" id="league-filter">
+      <option value="">All leagues</option>
+    </select>
+  </div>
+
+  <div class="result-count" id="result-count">Loading&hellip;</div>
+  <div class="team-grid" id="team-grid"></div>
+  <div class="empty" id="empty-state" style="display:none;">No teams match that search.</div>
+</main>
+
+<footer>
+  <span>Indoor Football Index &middot; Team directory compiled from league records.</span>
+  <span id="footer-count"></span>
+</footer>
+
+<script>
+  var TEAMS = [];
+
+  function esc(s){
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  function cardHtml(t){
+    var logo = t.logos && t.logos.length && t.logos[0].url
+      ? '<img src="' + esc(t.logos[0].url) + '" alt="' + esc(t.name) + ' logo" onerror="this.parentElement.innerHTML=\'<span class=&quot;no-logo&quot;>No logo</span>\'">'
+      : '<span class="no-logo">No logo</span>';
+    var stats = '';
+    if (t.totalRecord) stats += '<span class="stat"><b>' + esc(t.totalRecord) + '</b></span>';
+    if (t.winPct) stats += '<span class="stat">' + esc(t.winPct) + '</span>';
+    var champBadge = t.championships > 0
+      ? '<div class="champ-badge">&#127942; ' + t.championships + (t.championships === 1 ? ' Title' : ' Titles') + '</div>'
+      : '';
+    return '<a class="team-card" href="team.html?team=' + esc(t.slug) + '">' +
+      '<div class="team-logo">' + logo + '</div>' +
+      '<div class="team-info">' +
+        '<div class="team-name">' + esc(t.name) + '</div>' +
+        '<div class="team-meta"><span class="league">' + esc(t.league||'') + '</span>' + (t.years ? ' &middot; ' + esc(t.years) : '') + '</div>' +
+        '<div class="team-stats">' + stats + '</div>' +
+        champBadge +
+      '</div>' +
+      '</a>';
+  }
+
+  function teamLeagues(t){
+    return (t.league || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function render(){
+    var grid = document.getElementById('team-grid');
+    var countEl = document.getElementById('result-count');
+    var emptyEl = document.getElementById('empty-state');
+    var q = document.getElementById('search').value.trim().toLowerCase();
+    var league = document.getElementById('league-filter').value;
+
+    var filtered = TEAMS.filter(function(t){
+      var haystack = (t.name + ' ' + (t.league||'') + ' ' + (t.nameHistory||'')).toLowerCase();
+      var matchesQ = !q || haystack.indexOf(q) !== -1;
+      var matchesLeague = !league || teamLeagues(t).indexOf(league) !== -1;
+      return matchesQ && matchesLeague;
+    });
+
+    countEl.textContent = filtered.length + (filtered.length === 1 ? ' team' : ' teams');
+    grid.style.display = filtered.length ? 'grid' : 'none';
+    emptyEl.style.display = filtered.length ? 'none' : 'block';
+    grid.innerHTML = filtered.map(cardHtml).join('');
+  }
+
+  fetch('teams.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      TEAMS = data.slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+      var leagues = [];
+      TEAMS.forEach(function(t){
+        teamLeagues(t).forEach(function(l){
+          if (leagues.indexOf(l) === -1) leagues.push(l);
+        });
+      });
+      leagues.sort();
+      var leagueSelect = document.getElementById('league-filter');
+      leagues.forEach(function(l){
+        var opt = document.createElement('option');
+        opt.value = l; opt.textContent = l;
+        leagueSelect.appendChild(opt);
+      });
+      document.getElementById('footer-count').textContent = TEAMS.length + ' teams';
+      document.getElementById('search').addEventListener('input', render);
+      leagueSelect.addEventListener('change', render);
+      render();
+    })
+    .catch(function(err){
+      document.getElementById('result-count').textContent = '';
+      document.getElementById('team-grid').innerHTML = '';
+      document.getElementById('empty-state').style.display = 'block';
+      document.getElementById('empty-state').textContent = "Couldn't load teams.json: " + err;
+    });
+</script>
+
+</body>
+</html>

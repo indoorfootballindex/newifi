@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player — Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--arena-black); color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:1000px; margin:0 auto; padding:22px 24px 0;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:28px; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  main{max-width:1000px; margin:0 auto; padding:0 24px 60px;}
+
+  .back-link{display:block; padding:18px 0 0; font-size:13px; color:var(--steel);}
+  .back-link:hover{color:var(--chalk);}
+
+  .hero-card{
+    margin-top:16px; background:var(--card); border:1px solid var(--card-line); border-radius:12px;
+    padding:32px 32px 26px;
+  }
+  .hero-card h1{font-size:clamp(32px,5vw,48px); line-height:1; margin:0 0 14px; color:var(--chalk);}
+  .pos-badge{
+    display:inline-block; font-size:12px; letter-spacing:0.06em; font-weight:700; color:var(--arena-black);
+    background:var(--amber); padding:5px 12px; border-radius:5px; margin-bottom:18px;
+  }
+  .hero-card .teams-label{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); margin-bottom:6px;}
+  .hero-card .teams-value{font-size:15px; color:var(--chalk-dim);}
+
+  .section{padding:36px 0 8px;}
+  .section h2{
+    font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:var(--chalk-dim);
+    margin:0 0 12px; padding-bottom:10px; border-bottom:2px solid var(--crimson); font-weight:700;
+  }
+  .subhead{
+    font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel);
+    margin:24px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--card-line);
+  }
+  .subhead:first-of-type{margin-top:4px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:12px;}
+  .stat-card{background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:16px 14px; text-align:center;}
+  .stat-card .v{font-size:26px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .stat-card .k{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin-top:6px;}
+  @media (max-width:700px){.stat-grid{grid-template-columns:repeat(3,1fr);}}
+
+  .table-wrap{border:1px solid var(--card-line); border-radius:10px; overflow-x:auto; margin-bottom:8px;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    text-align:right; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel);
+    padding:10px 12px; border-bottom:1px solid var(--card-line); background:var(--card); white-space:nowrap; font-weight:500;
+  }
+  thead th:first-child, thead th:nth-child(2){text-align:left;}
+  tbody td{padding:9px 12px; border-bottom:1px solid var(--steel-line); text-align:right; color:var(--chalk-dim); font-family:'IBM Plex Mono',monospace; white-space:nowrap;}
+  tbody td:first-child, tbody td:nth-child(2){text-align:left; font-family:'Inter',sans-serif; color:var(--chalk);}
+  tbody tr:hover td{background:rgba(255,255,255,0.02);}
+  tbody tr.career td{
+    background:var(--arena-black-2); color:var(--chalk); font-weight:600; border-top:1px solid var(--card-line);
+    border-bottom:none;
+  }
+  tbody tr.career td:first-child{color:var(--amber);}
+
+  .empty-state{padding:60px 24px; text-align:center; color:var(--steel);}
+  .empty-state h1{color:var(--chalk); font-size:28px; margin-bottom:10px;}
+
+  footer{max-width:1000px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);}
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><strong>Indoor Football Index</strong> / Players</div>
+  <nav>
+    <a href="leagues.html">Leagues</a>
+    <a href="teams.html">Teams</a>
+    <a href="index.html#schedule">Schedule</a>
+    <a href="index.html#news">News</a>
+  </nav>
+</div>
+
+<main id="main">
+  <div class="empty-state" id="loading">Loading player&hellip;</div>
+</main>
+
+<footer>
+  <span>Indoor Football Index &middot; Player data compiled from team box scores.</span>
+  <span id="footer-name"></span>
+</footer>
+
+<script>
+  var CATEGORIES = [
+    {
+      id: 'passing', title: 'Passing', trigger: ['P Att'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'Comp', get:function(r){return r['P Comp'];}},
+        {label:'Att', get:function(r){return r['P Att'];}},
+        {label:'Pct', get:function(r){return pct(r['P Comp'], r['P Att']);}},
+        {label:'Yds', get:function(r){return r['P Yds'];}},
+        {label:'Y/G', get:function(r){return perGame(r['P Yds'], r['GP']);}},
+        {label:'Y/A', get:function(r){return perAtt(r['P Yds'], r['P Att']);}},
+        {label:'TD', get:function(r){return r['P TD'];}},
+        {label:'Int', get:function(r){return r['P Int'];}}
+      ]
+    },
+    {
+      id: 'rushing', title: 'Rushing', trigger: ['Rush Att'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'Car', get:function(r){return r['Rush Att'];}},
+        {label:'Yds', get:function(r){return r['Rush Yds'];}},
+        {label:'Avg', get:function(r){return perAtt(r['Rush Yds'], r['Rush Att']);}},
+        {label:'Y/G', get:function(r){return perGame(r['Rush Yds'], r['GP']);}},
+        {label:'TD', get:function(r){return r['Rush TD'];}}
+      ]
+    },
+    {
+      id: 'receiving', title: 'Receiving', trigger: ['Rec'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'Rec', get:function(r){return r['Rec'];}},
+        {label:'Yds', get:function(r){return r['Rec Yds'];}},
+        {label:'Avg', get:function(r){return perAtt(r['Rec Yds'], r['Rec']);}},
+        {label:'Y/G', get:function(r){return perGame(r['Rec Yds'], r['GP']);}},
+        {label:'TD', get:function(r){return r['Rec TD'];}}
+      ]
+    },
+    {
+      id: 'returns', title: 'Kick Returns', trigger: ['KR'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'KR', get:function(r){return r['KR'];}},
+        {label:'Yds', get:function(r){return r['KR Yds'];}},
+        {label:'Avg', get:function(r){return perAtt(r['KR Yds'], r['KR']);}},
+        {label:'TD', get:function(r){return r['KR TD'];}}
+      ]
+    },
+    {
+      id: 'kicking', title: 'Kicking', trigger: ['FGA','XPA'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'FGM', get:function(r){return r['FGM'];}},
+        {label:'FGA', get:function(r){return r['FGA'];}},
+        {label:'FG%', get:function(r){return pct(r['FGM'], r['FGA']);}},
+        {label:'XPM', get:function(r){return r['XPM'];}},
+        {label:'XPA', get:function(r){return r['XPA'];}},
+        {label:'XP%', get:function(r){return pct(r['XPM'], r['XPA']);}}
+      ]
+    },
+    {
+      id: 'defense', title: 'Defense', trigger: ['TotTkl','Sck','Def Int','PBU','FF','FR','Blk'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'Solo', get:function(r){return r['Tkl'];}},
+        {label:'Ast', get:function(r){return r['Ast'];}},
+        {label:'Tkl', get:function(r){return r['TotTkl'];}},
+        {label:'TFL', get:function(r){return r['TFL'];}},
+        {label:'Sck', get:function(r){return r['Sck'];}},
+        {label:'FF', get:function(r){return r['FF'];}},
+        {label:'FR', get:function(r){return r['FR'];}},
+        {label:'Int', get:function(r){return r['Def Int'];}},
+        {label:'PBU', get:function(r){return r['PBU'];}},
+        {label:'Blk', get:function(r){return r['Blk'];}}
+      ]
+    },
+    {
+      id: 'allpurpose', title: 'All-Purpose', trigger: ['Rush Yds','Rec Yds','KR Yds'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'AP Yds', get:function(r){return sumOf(r,['Rush Yds','Rec Yds','KR Yds']);}},
+        {label:'Rush', get:function(r){return r['Rush Yds'];}},
+        {label:'Rec', get:function(r){return r['Rec Yds'];}},
+        {label:'KR', get:function(r){return r['KR Yds'];}}
+      ]
+    },
+    {
+      id: 'scoring', title: 'Scoring', trigger: ['Pts'],
+      cols: [
+        {label:'GP', get:function(r){return r['GP'];}},
+        {label:'Pts', get:function(r){return r['Pts'];}},
+        {label:'Pts/G', get:function(r){return perGame(r['Pts'], r['GP']);}},
+        {label:'Rush', get:function(r){return r['Rush TD'];}},
+        {label:'Rec', get:function(r){return r['Rec TD'];}},
+        {label:'KR', get:function(r){return r['KR TD'];}},
+        {label:'FGM', get:function(r){return r['FGM'];}},
+        {label:'XPM', get:function(r){return r['XPM'];}}
+      ]
+    }
+  ];
+
+  function num(v){ return (typeof v === 'number') ? v : null; }
+  function sumOf(r, keys){
+    var s = null;
+    keys.forEach(function(k){ var v = num(r[k]); if (v != null){ s = (s||0) + v; } });
+    return s;
+  }
+  function pct(m,a){ m=num(m); a=num(a); if(!a) return null; return ((100*(m||0)/a).toFixed(1))+'%'; }
+  function perGame(y,g){ y=num(y); g=num(g); if(!g) return null; return (y/g).toFixed(1); }
+  function perAtt(y,a){ y=num(y); a=num(a); if(!a) return null; return (y/a).toFixed(1); }
+  function fmt(v){
+    if (v == null || v === '') return '&ndash;';
+    if (typeof v === 'string') return v;
+    return (v % 1 === 0) ? v.toLocaleString() : v.toFixed(1);
+  }
+
+  function render(rows, slugParam){
+    var main = document.getElementById('main');
+    if (!rows.length){
+      main.innerHTML = '<div class="empty-state"><h1>Player not found</h1><p>No stats on file for &ldquo;' + slugParam + '&rdquo;.</p></div>';
+      return;
+    }
+
+    var name = rows[0].name;
+    var teams = [...new Set(rows.map(function(r){ return r.team; }))];
+    var positions = [...new Set(rows.map(function(r){ return r.Pos; }).filter(Boolean))];
+    var latestPos = rows.slice().sort(function(a,b){ return (b.Season||0)-(a.Season||0); })[0].Pos || positions[0] || '';
+
+    document.getElementById('footer-name').textContent = name;
+    document.title = name + ' \u2014 Indoor Football Index';
+
+    var totals = {};
+    rows.forEach(function(r){
+      Object.keys(r).forEach(function(k){
+        if (typeof r[k] === 'number'){ totals[k] = (totals[k] || 0) + r[k]; }
+      });
+    });
+    var HEADLINE = ['P Yds','P TD','Rush Yds','Rush TD','Rec','Rec Yds','Rec TD','TotTkl','Sck','Def Int','Pts'];
+    var headlineLabels = {'P Yds':'Pass Yds','P TD':'Pass TD','Rush Yds':'Rush Yds','Rush TD':'Rush TD','Rec':'Rec','Rec Yds':'Rec Yds','Rec TD':'Rec TD','TotTkl':'Tackles','Sck':'Sacks','Def Int':'Int','Pts':'Points'};
+    var statCards = HEADLINE.filter(function(k){ return totals[k]; }).slice(0,5).map(function(k){
+      return '<div class="stat-card"><div class="v">' + fmt(totals[k]) + '</div><div class="k">' + headlineLabels[k] + '</div></div>';
+    }).join('');
+
+    var sortedRows = rows.slice().sort(function(a,b){ return (a.Season||0) - (b.Season||0); });
+
+    var categoryHtml = CATEGORIES.map(function(cat){
+      var applies = rows.some(function(r){ return cat.trigger.some(function(t){ return num(r[t]) != null; }); });
+      if (!applies) return '';
+
+      var headerHtml = '<th>Year</th><th>Team</th>' + cat.cols.map(function(c){ return '<th>' + c.label + '</th>'; }).join('');
+      var bodyHtml = sortedRows.map(function(r){
+        var cells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(r)) + '</td>'; }).join('');
+        return '<tr><td>' + (r.Season || '&ndash;') + '</td><td>' + r.team + '</td>' + cells + '</tr>';
+      }).join('');
+
+      var careerCells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(totals)) + '</td>'; }).join('');
+      var teamCount = teams.length + ' TM' + (teams.length === 1 ? '' : 's');
+      var careerRow = '<tr class="career"><td>Career</td><td>' + teamCount + '</td>' + careerCells + '</tr>';
+
+      return '<div class="subhead">' + cat.title + '</div>' +
+        '<div class="table-wrap"><table><thead><tr>' + headerHtml + '</tr></thead><tbody>' + bodyHtml + careerRow + '</tbody></table></div>';
+    }).join('');
+
+    main.innerHTML =
+      '<a class="back-link" href="index.html">&larr; Indoor Football Index</a>' +
+      '<div class="hero-card">' +
+        '<h1 class="display">' + name + '</h1>' +
+        (latestPos ? '<div class="pos-badge">' + latestPos + '</div>' : '') +
+        '<div class="teams-label">Teams</div>' +
+        '<div class="teams-value">' + teams.join(', ') + '</div>' +
+      '</div>' +
+      '<div class="section"><h2>Career Stats</h2><div class="stat-grid">' + statCards + '</div></div>' +
+      '<div class="section"><h2>Season by Season</h2>' + categoryHtml + '</div>';
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var playerSlug = params.get('player');
+
+  if (!playerSlug){
+    document.getElementById('main').innerHTML = '<div class="empty-state"><h1>No player specified</h1><p>Link to this page with <span class="mono">?player=player-slug</span>.</p></div>';
+  } else {
+    fetch('players.json')
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        var rows = data.filter(function(r){ return r.slug === playerSlug; });
+        render(rows, playerSlug);
+      })
+      .catch(function(err){
+        document.getElementById('main').innerHTML = '<div class="empty-state"><h1>Couldn\'t load player data</h1><p>' + err + '</p></div>';
+      });
+  }
+</script>
+
+</body>
+</html>

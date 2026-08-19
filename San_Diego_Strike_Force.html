@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>San Diego Strike Force — Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --crimson-dim:#8f1c29;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --turf-dim:#2a4d32;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--arena-black);
+    color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  a{color:inherit;}
+  .plain-link{color:inherit; text-decoration:none;}
+  .plain-link:hover{text-decoration:none;}
+
+  .hashes{width:100%; height:14px; display:flex; align-items:center;}
+  .hashes svg{width:100%; height:100%; display:block;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; padding:22px 24px 0;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:28px; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
+  .topbar nav a{text-decoration:none;}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  .hero{max-width:1100px; margin:0 auto; padding:56px 24px 40px; display:grid; grid-template-columns:auto 1fr auto; gap:36px; align-items:center;}
+  .hero-logo{width:132px; height:132px; border-radius:50%; border:1px solid var(--card-line); background:var(--card); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;}
+  .hero-logo img{width:100%; height:100%; object-fit:contain; padding:14px;}
+  .hero-id .eyebrow{font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--crimson); font-weight:600; margin:0 0 10px;}
+  .hero-id h1{font-size:clamp(40px,6vw,72px); line-height:0.92; margin:0 0 14px; color:var(--chalk);}
+  .hero-id .sub{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:14px; color:var(--steel);}
+  .hero-id .sub span{white-space:nowrap;}
+  .hero-id .sub b{color:var(--chalk-dim); font-weight:500;}
+  .hero-record{text-align:right; border-left:1px solid var(--card-line); padding-left:36px;}
+  .hero-record .label{font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--steel); margin:0 0 6px;}
+  .hero-record .num{font-size:56px; color:var(--chalk); line-height:1;}
+  .hero-record .num span{color:var(--steel-line);}
+  .hero-record .breakdown{margin-top:10px; font-size:12px; color:var(--steel);}
+  .hero-record .breakdown b{color:var(--chalk-dim); font-weight:500;}
+  @media (max-width:760px){
+    .hero{grid-template-columns:1fr; text-align:center; padding-top:36px;}
+    .hero-logo{margin:0 auto;}
+    .hero-record{border-left:none; border-top:1px solid var(--card-line); padding-left:0; padding-top:20px; text-align:center;}
+  }
+
+  section{max-width:1100px; margin:0 auto; padding:52px 24px;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:26px; gap:16px; flex-wrap:wrap;}
+  .section-head h2{font-size:28px; margin:0; color:var(--chalk);}
+  .section-head .note{font-size:13px; color:var(--steel); max-width:360px; text-align:right;}
+
+  .snapshot{display:grid; grid-template-columns:repeat(6,1fr); border:1px solid var(--card-line); border-radius:10px; overflow:hidden;}
+  .snap-cell{padding:20px 14px; text-align:center; border-right:1px solid var(--card-line); background:var(--card);}
+  .snap-cell:last-child{border-right:none;}
+  .snap-cell .v{font-size:30px; color:var(--amber);}
+  .snap-cell .k{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); margin-top:6px;}
+  @media (max-width:760px){
+    .snapshot{grid-template-columns:repeat(3,1fr);}
+    .snap-cell:nth-child(3n){border-right:none;}
+    .snap-cell:nth-child(3){border-right:none;}
+  }
+
+  .history-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:48px;}
+  .history-copy p{font-size:15px; line-height:1.75; color:var(--chalk-dim); margin:0 0 16px;}
+  .history-copy p:last-child{margin-bottom:0;}
+  .timeline{list-style:none; margin:0; padding:0; border-left:2px solid var(--card-line);}
+  .timeline li{position:relative; padding:0 0 22px 22px;}
+  .timeline li:last-child{padding-bottom:0;}
+  .timeline li::before{content:''; position:absolute; left:-6px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--arena-black); border:2px solid var(--steel);}
+  .timeline li.win::before{border-color:var(--turf); background:var(--turf);}
+  .timeline li.mark::before{border-color:var(--amber); background:var(--amber);}
+  .timeline .yr{font-size:13px; color:var(--amber); letter-spacing:0.06em;}
+  .timeline .ev{font-size:14px; color:var(--chalk-dim); margin-top:2px; line-height:1.5;}
+  @media (max-width:760px){.history-grid{grid-template-columns:1fr;}}
+
+  .coaches{display:flex; flex-wrap:wrap; gap:14px;}
+  .coach-card{flex:1 1 260px; background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:18px 20px;}
+  .coach-card .name{font-size:17px; color:var(--chalk); font-weight:600;}
+  .coach-card .tenure{font-size:12px; color:var(--steel); margin-top:4px; letter-spacing:0.04em;}
+
+  .logo-history{display:flex; flex-wrap:wrap; gap:14px;}
+  .logo-card{flex:0 0 156px; background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:20px 16px; text-align:center; display:flex; flex-direction:column; align-items:center;}
+  .logo-card .badge-slot{height:24px; display:flex; align-items:center; margin-bottom:2px;}
+  .logo-card .badge{display:inline-block; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--amber); background:rgba(232,163,61,0.12); padding:3px 8px; border-radius:4px; font-weight:600;}
+  .logo-card .thumb{width:88px; height:88px; margin:0 auto 12px; border-radius:50%; background:var(--arena-black-2); border:1px solid var(--card-line); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;}
+  .logo-card .thumb img{width:100%; height:100%; object-fit:contain; padding:10px;}
+  .logo-card .logo-name{font-size:14px; color:var(--chalk); font-weight:600; line-height:1.3; min-height:2.6em; display:flex; align-items:flex-start; justify-content:center; margin-bottom:4px;}
+  .logo-card .caption{font-size:12px; color:var(--steel); line-height:1.4; margin-top:auto;}
+
+  .records-wrap{border:1px solid var(--card-line); border-radius:10px; overflow:hidden;}
+  .records-table{width:100%; border-collapse:collapse;}
+  .records-table thead th{text-align:left; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); padding:12px 18px; border-bottom:1px solid var(--card-line); font-weight:500; background:var(--card);}
+  .records-table thead th:last-child{text-align:right;}
+  .records-table .group-row td{padding:10px 18px 8px; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--crimson); font-weight:600; background:var(--arena-black-2); border-bottom:1px solid var(--card-line); border-top:1px solid var(--card-line);}
+  .records-table tr.group-row:first-child td{border-top:none;}
+  .records-table td{padding:12px 18px; border-bottom:1px solid var(--steel-line); font-size:14px; color:var(--chalk-dim);}
+  .records-table tbody tr:not(.group-row):last-child td{border-bottom:none;}
+  .records-table td.rec{color:var(--chalk-dim); padding-left:30px;}
+  .records-table td.holder{color:var(--amber); font-weight:500;}
+  .records-table td.val{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--chalk); white-space:nowrap;}
+  .records-table tbody tr:not(.group-row):hover td{background:rgba(255,255,255,0.03);}
+
+  .leaders-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .leader-card{background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:20px;}
+  .leader-card .cat{font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--crimson); font-weight:600; margin-bottom:12px;}
+  .leader-card .who{font-size:18px; color:var(--chalk); font-weight:600;}
+  .leader-card .stat{margin-top:8px; font-size:26px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .leader-card .stat span{font-size:13px; color:var(--steel); font-family:'Inter',sans-serif; margin-left:6px;}
+  @media (max-width:760px){.leaders-grid{grid-template-columns:1fr 1fr;}}
+  @media (max-width:480px){.leaders-grid{grid-template-columns:1fr;}}
+
+  select.unit-select{
+    appearance:none; -webkit-appearance:none; background:var(--card); color:var(--chalk);
+    border:1px solid var(--card-line); border-radius:8px; padding:9px 34px 9px 14px;
+    font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.03em; cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%2382868c'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  select.unit-select:focus{outline:1px solid var(--crimson); outline-offset:1px;}
+
+  .season-panel{border:1px solid var(--card-line); border-radius:10px; background:var(--card); padding:26px 28px; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:26px;}
+  .season-panel .yr-big{font-size:44px; color:var(--chalk); line-height:1;}
+  .season-panel .body p{margin:0; font-size:14px; color:var(--chalk-dim); line-height:1.6; max-width:520px;}
+  .season-panel .rec-block{text-align:right;}
+  .season-panel .rec-block .rv{font-size:26px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .season-panel .rec-block .rk{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); margin-top:4px;}
+  .season-panel .rec-block .po{font-size:12px; color:var(--turf); margin-top:8px; font-family:'IBM Plex Mono',monospace;}
+  @media (max-width:700px){
+    .season-panel{grid-template-columns:1fr; text-align:left;}
+    .season-panel .rec-block{text-align:left;}
+  }
+  .season-games{margin-top:16px;}
+  .season-games .empty{padding:22px 24px; text-align:center; font-size:13px; color:var(--steel); border:1px dashed var(--card-line); border-radius:10px;}
+
+  .schedule{border:1px solid var(--card-line); border-radius:10px; overflow:hidden;}
+  .game-row{display:grid; grid-template-columns:96px 1fr 100px 64px; align-items:center; padding:13px 18px; border-bottom:1px solid var(--steel-line); font-size:14px;}
+  .game-row:last-child{border-bottom:none;}
+  .game-row .date{color:var(--steel); font-size:12px;}
+  .game-row .opp{color:var(--chalk-dim);}
+  .game-row .score{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--chalk);}
+  .game-row .wl{text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; padding:3px 0; border-radius:4px; margin-left:16px;}
+  .wl.w{background:rgba(60,110,71,0.25); color:#7fc492;}
+  .wl.l{background:rgba(212,38,58,0.2); color:#f0919c;}
+  .game-row.playoff{background:rgba(232,163,61,0.05);}
+  .game-row.playoff .date{color:var(--amber);}
+
+  footer{max-width:1100px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);}
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><strong>Indoor Football Index</strong> / Teams</div>
+  <nav>
+    <a href="leagues.html">Leagues</a>
+    <a href="teams.html">Teams</a>
+    <a href="index.html#schedule">Schedule</a>
+    <a href="index.html#news">News</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="hero-logo">
+    <img src="https://d2o2figo6ddd0g.cloudfront.net/c/r/jf7df15sl8dp6t/Primary_Logo.png" alt="San Diego Strike Force logo">
+  </div>
+  <div class="hero-id">
+    <p class="eyebrow">IFL (2019-present)</p>
+    <h1 class="display">San<br>Diego Strike Force</h1>
+    <div class="sub">
+      <span><b>Frontwave Arena (2025–present)</b></span>
+      <span>Formerly Pechanga Arena (2019–2024)</span>
+      <span>Est. <b>2019</b></span>
+    </div>
+  </div>
+  <div class="hero-record">
+    <p class="label">All-time record</p>
+    <div class="num display">47&ndash;53</div>
+    <div class="breakdown"><b>44-50</b> regular season &middot; <b>3-3</b> postseason</div>
+  </div>
+</header>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1100 14"><line x1="0" y1="7" x2="1100" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="snapshot-section">
+  <div class="snapshot">
+    <div class="snap-cell"><div class="v mono">13-3</div><div class="k">2026 record</div></div>
+    <div class="snap-cell"><div class="v mono">0</div><div class="k">Championships</div></div>
+    <div class="snap-cell"><div class="v mono">L1</div><div class="k">Current streak</div></div>
+    <div class="snap-cell"><div class="v mono">3</div><div class="k">Playoff berths</div></div>
+    <div class="snap-cell"><div class="v mono">2024</div><div class="k">First playoff win</div></div>
+    <div class="snap-cell"><div class="v mono">7</div><div class="k">Seasons played</div></div>
+  </div>
+</section>
+
+<section id="history">
+  <div class="section-head">
+    <h2 class="display">Franchise history</h2>
+  </div>
+  <div class="history-grid">
+    <div class="history-copy">
+      <p>The San Diego Strike Force began play in 2019 as an IFL expansion team, taking the field for the first time under owner Roy Choi and general manager Ryan Eucker. That inaugural campaign was rough, a 1–13 finish for the young franchise. The pandemic hit next.</p>
+      <p>The Strike Force opened the 2020 season with a 50–36 road win over the Bismarck Bucks, but the IFL postponed the rest of the schedule in March 2020 and canceled it outright in April, leaving San Diego at 1–0. Continued pandemic restrictions in California then forced the team to withdraw from the 2021 season entirely, putting the franchise on ice for two full years. That hiatus became a turning point.</p>
+      <p>During the layoff, ownership transitioned to a new group led by Taylor Genuser, and the team used the downtime to rebuild from the ground up — a complete rebrand including new uniforms and logos that gave the Strike Force the identity it carries today. San Diego returned to the field in 2022 under Genuser with a more offensive-minded approach. The results took a couple years to arrive, but the payoff has been real: in 2024 the Strike Force posted their first winning regular season record at 10–6, made the playoffs for the first time, and picked up their first postseason win before falling in the conference semifinals.</p>
+      <p>They backed it up in 2025, going 10–6 again to reach the playoffs and reaching the Western Confenece Championship. They fell to the Vegas Knight Hawks, but went 13-3 in 2026, earning the #1 seed in the West. They would fall in the first round to the champs-to-be, the Arizona Rattlers.</p>
+    </div>
+    <ul class="timeline">
+      <li><span class="yr mono">2019</span><div class="ev">1-13 regular season.</div></li>
+      <li><span class="yr mono">2020</span><div class="ev">1-0 regular season.</div></li>
+      <li><span class="yr mono">2022</span><div class="ev">3-13 regular season.</div></li>
+      <li><span class="yr mono">2023</span><div class="ev">6-9 regular season.</div></li>
+      <li class="win"><span class="yr mono">2024</span><div class="ev">10-6 regular season. Postseason 1-1.</div></li>
+      <li class="win"><span class="yr mono">2025</span><div class="ev">10-6 regular season. Postseason 1-1.</div></li>
+      <li class="win"><span class="yr mono">2026</span><div class="ev">13-3 regular season. Postseason 1-1.</div></li>
+    </ul>
+  </div>
+</section>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1100 14"><line x1="0" y1="7" x2="1100" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="logos">
+  <div class="section-head"><h2 class="display">Logo history</h2></div>
+  <div class="logo-history">
+    <div class="logo-card"><div class="badge-slot"><span class="badge">Current</span></div><div class="thumb"><img src="https://d2o2figo6ddd0g.cloudfront.net/c/r/jf7df15sl8dp6t/Primary_Logo.png" alt="San Diego Strike Force logo"></div><div class="logo-name">San Diego Strike Force</div><div class="caption">San Diego Strike Force (2021-present)</div></div>
+    <div class="logo-card"><div class="badge-slot"></div><div class="thumb"><img src="https://pechangaarenasd.com/wp-content/uploads/SD-Strike-Force-Logo-750-x-400.jpg" alt="San Diego Strike Force logo"></div><div class="logo-name">San Diego Strike Force</div><div class="caption">San Diego Strike Force (2019)</div></div>
+  </div>
+</section>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1100 14"><line x1="0" y1="7" x2="1100" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="coaches">
+  <div class="section-head"><h2 class="display">Coaching history</h2></div>
+  <div class="coaches">
+    <div class="coach-card"><div class="name">Burt Grossman</div><div class="tenure mono">2019-2022</div></div>
+    <div class="coach-card"><div class="name">David Beezer</div><div class="tenure mono">2022</div></div>
+    <div class="coach-card"><div class="name">Taylor Genuser</div><div class="tenure mono">2022-present</div></div>
+  </div>
+</section>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1100 14"><line x1="0" y1="7" x2="1100" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="records">
+  <div class="section-head">
+    <h2 class="display">Franchise records</h2>
+    <p class="note">Franchise record holders.</p>
+  </div>
+  <div style="margin-bottom:20px;">
+    <select class="unit-select" id="records-filter">
+      <option value="offense">Offense</option>
+      <option value="defense">Defense</option>
+      <option value="special">Special teams</option>
+    </select>
+  </div>
+  <div class="records-wrap">
+  <table class="records-table">
+    <thead><tr><th>Record</th><th>Holder</th><th>Total</th></tr></thead>
+    <tbody data-unit="offense">
+      <tr class="group-row"><td colspan="3">Passing</td></tr>
+      <tr><td class="rec">Passing Yards</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Passing TDs</td><td class="holder"></td><td class="val"></td></tr>
+      <tr class="group-row"><td colspan="3">Rushing</td></tr>
+      <tr><td class="rec">Rushing Yards</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Rushing TDs</td><td class="holder"></td><td class="val"></td></tr>
+      <tr class="group-row"><td colspan="3">Receiving</td></tr>
+      <tr><td class="rec">Receiving Yards</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Receiving TDs</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Receptions</td><td class="holder"></td><td class="val"></td></tr>
+      <tr class="group-row"><td colspan="3">All-purpose</td></tr>
+      <tr><td class="rec">All-Purpose Yards</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Total TDs</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Points Scored</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Games Played</td><td class="holder"></td><td class="val"></td></tr>
+    </tbody>
+    <tbody data-unit="defense" style="display:none">
+      <tr class="group-row"><td colspan="3">Tackling</td></tr>
+      <tr><td class="rec">Tackles</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Tackles For Loss</td><td class="holder"></td><td class="val"></td></tr>
+      <tr class="group-row"><td colspan="3">Pass rush</td></tr>
+      <tr><td class="rec">Sacks</td><td class="holder"></td><td class="val"></td></tr>
+      <tr class="group-row"><td colspan="3">Coverage</td></tr>
+      <tr><td class="rec">Interceptions</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Passes Defended/Broken Up</td><td class="holder"></td><td class="val"></td></tr>
+      <tr class="group-row"><td colspan="3">Takeaways</td></tr>
+      <tr><td class="rec">Forced Fumbles</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Fumble Recoveries</td><td class="holder"></td><td class="val"></td></tr>
+    </tbody>
+    <tbody data-unit="special" style="display:none">
+      <tr class="group-row"><td colspan="3">Kicking</td></tr>
+      <tr><td class="rec">Field Goals Made</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">PATs Made</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Blocked Kicks</td><td class="holder"></td><td class="val"></td></tr>
+      <tr class="group-row"><td colspan="3">Returns</td></tr>
+      <tr><td class="rec">Kickoff Return Yards</td><td class="holder"></td><td class="val"></td></tr>
+      <tr><td class="rec">Kickoff Return TDs</td><td class="holder"></td><td class="val"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1100 14"><line x1="0" y1="7" x2="1100" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="leaders">
+  <div class="section-head">
+    <h2 class="display">2026 season leaders</h2>
+  </div>
+  <div style="margin-bottom:20px;">
+    <select class="unit-select" id="unit-filter">
+      <option value="offense">Offense</option>
+      <option value="defense">Defense</option>
+      <option value="special">Special teams</option>
+    </select>
+  </div>
+  <div class="leaders-grid" id="leaders-grid">
+    <div class="leader-card" data-unit="offense"><div class="cat">Passing yards</div><div class="who"><a href="player.html?player=nate-davis" class="plain-link">Nate Davis</a></div><div class="stat">3,211<span>yds</span></div></div>
+    <div class="leader-card" data-unit="offense"><div class="cat">Passing touchdowns</div><div class="who"><a href="player.html?player=nate-davis" class="plain-link">Nate Davis</a></div><div class="stat">64<span>td</span></div></div>
+    <div class="leader-card" data-unit="offense"><div class="cat">Rushing yards</div><div class="who"><a href="player.html?player=edward-vander" class="plain-link">Edward Vander</a></div><div class="stat">487<span>yds</span></div></div>
+    <div class="leader-card" data-unit="offense"><div class="cat">Rushing touchdowns</div><div class="who"><a href="player.html?player=edward-vander" class="plain-link">Edward Vander</a></div><div class="stat">16<span>td</span></div></div>
+    <div class="leader-card" data-unit="offense"><div class="cat">Receiving yards</div><div class="who"><a href="player.html?player=dallas-daniels" class="plain-link">Dallas Daniels</a></div><div class="stat">804<span>yds</span></div></div>
+    <div class="leader-card" data-unit="offense"><div class="cat">Receiving touchdowns</div><div class="who"><a href="player.html?player=dallas-daniels" class="plain-link">Dallas Daniels</a></div><div class="stat">19<span>td</span></div></div>
+    <div class="leader-card" data-unit="defense" style="display:none"><div class="cat">Tackles</div><div class="who"><a href="player.html?player=royce-see" class="plain-link">Royce See</a></div><div class="stat">94<span>tkl</span></div></div>
+    <div class="leader-card" data-unit="defense" style="display:none"><div class="cat">Sacks</div><div class="who"><a href="player.html?player=adam-anderson" class="plain-link">Adam Anderson</a></div><div class="stat">5.5<span>sck</span></div></div>
+    <div class="leader-card" data-unit="defense" style="display:none"><div class="cat">Interceptions</div><div class="who"><a href="player.html?player=herman-smith" class="plain-link">Herman Smith</a></div><div class="stat">5<span>int</span></div></div>
+    <div class="leader-card" data-unit="defense" style="display:none"><div class="cat">Passes defended</div><div class="who"><a href="player.html?player=william-barber" class="plain-link">William Barber</a></div><div class="stat">17<span>pbu</span></div></div>
+    <div class="leader-card" data-unit="defense" style="display:none"><div class="cat">Tackles for loss</div><div class="who"><a href="player.html?player=adam-anderson" class="plain-link">Adam Anderson</a></div><div class="stat">13<span>tfl</span></div></div>
+    <div class="leader-card" data-unit="defense" style="display:none"><div class="cat">Forced fumbles</div><div class="who"><a href="player.html?player=adam-anderson" class="plain-link">Adam Anderson</a></div><div class="stat">4<span>ff</span></div></div>
+    <div class="leader-card" data-unit="special" style="display:none"><div class="cat">Kickoff return yards</div><div class="who"><a href="player.html?player=kiael-kelly" class="plain-link">Kiael Kelly</a></div><div class="stat">286<span>yds</span></div></div>
+    <div class="leader-card" data-unit="special" style="display:none"><div class="cat">Field goals made</div><div class="who"><a href="player.html?player=ernesto-lacayo" class="plain-link">Ernesto Lacayo</a></div><div class="stat">10<span>fgm</span></div></div>
+    <div class="leader-card" data-unit="special" style="display:none"><div class="cat">PATs made</div><div class="who"><a href="player.html?player=ernesto-lacayo" class="plain-link">Ernesto Lacayo</a></div><div class="stat">94<span>xpm</span></div></div>
+  </div>
+</section>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1100 14"><line x1="0" y1="7" x2="1100" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="schedule">
+  <div class="section-head">
+    <h2 class="display">Season by season</h2>
+    <p class="note">Pick a year for the record and how the season played out.</p>
+  </div>
+  <div style="margin-bottom:20px;">
+    <select class="unit-select" id="season-select">
+      <option value="2026" selected>2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+      <option value="2020">2020</option>
+      <option value="2019">2019</option>
+    </select>
+  </div>
+  <div class="season-panel">
+    <div class="yr-big display" id="season-yr">2026</div>
+    <div class="body"><p id="season-note"></p></div>
+    <div class="rec-block">
+      <div class="rv mono" id="season-rec"></div>
+      <div class="rk">Regular season</div>
+      <div class="po mono" id="season-post"></div>
+    </div>
+  </div>
+  <div class="season-games" id="season-games"></div>
+</section>
+
+<script>
+  var seasonData = {
+    "2019": {rec:"1\u201313", note:"IFL. Did Not Qualify", post:"", games:[
+      ["Feb 22", "at Quad City Steamwheelers", "49\u201367", "L"],
+      ["Mar 03", "vs Tucson Sugar Skulls", "44\u201365", "L"],
+      ["Mar 09", "at Cedar Rapids River Kings", "48\u201365", "L"],
+      ["Mar 24", "vs Green Bay Blizzard", "45\u201353", "L"],
+      ["Mar 31", "at Tucson Sugar Skulls", "41\u201351", "L"],
+      ["Apr 06", "at Arizona Rattlers", "58\u201391", "L"],
+      ["Apr 14", "vs Cedar Rapids River Kings", "40\u201334", "W"],
+      ["Apr 22", "vs Arizona Rattlers", "14\u201352", "L"],
+      ["May 04", "at Tucson Sugar Skulls", "34\u201354", "L"],
+      ["May 09", "vs Tucson Sugar Skulls", "48\u201365", "L"],
+      ["May 19", "at Arizona Rattlers", "63\u201384", "L"],
+      ["Jun 01", "at Sioux Falls Storm", "7\u201360", "L"],
+      ["Jun 06", "vs Nebraska Danger", "26\u201354", "L"],
+      ["Jun 15", "at Arizona Rattlers", "16\u201357", "L"]
+    ]},
+    "2020": {rec:"1\u20130", note:"IFL. Season Cancelled", post:"", games:[
+      ["Mar 08", "at Bismarck Bucks", "50\u201336", "W"]
+    ]},
+    "2022": {rec:"3\u201313", note:"IFL \u00b7 Western. Did Not Qualify", post:"", games:[
+      ["Mar 21", "at Bay Area Panthers", "33\u201338", "L"],
+      ["Mar 28", "vs Arizona Rattlers", "10\u201348", "L"],
+      ["Apr 02", "at Northern Arizona Wranglers", "28\u201345", "L"],
+      ["Apr 09", "at Tucson Sugar Skulls", "67\u201366", "W"],
+      ["Apr 15", "at Arizona Rattlers", "33\u201366", "L"],
+      ["May 01", "at Bismarck Bucks", "38\u201328", "W"],
+      ["May 09", "vs Massachusetts Pirates", "30\u201351", "L"],
+      ["May 14", "vs Vegas Knight Hawks", "23\u201368", "L"],
+      ["May 21", "vs Tucson Sugar Skulls", "65\u201369", "L"],
+      ["May 28", "at Duke City Gladiators", "49\u201354", "L"],
+      ["Jun 04", "vs Northern Arizona Wranglers", "17\u201335", "L"],
+      ["Jun 11", "at Vegas Knight Hawks", "23\u201349", "L"],
+      ["Jun 18", "vs Bay Area Panthers", "66\u201326", "W"],
+      ["Jul 02", "vs Tucson Sugar Skulls", "47\u201353", "L"],
+      ["Jul 09", "vs Duke City Gladiators", "51\u201353", "L"],
+      ["Jul 16", "at Massachusetts Pirates", "17\u201360", "L"]
+    ]},
+    "2023": {rec:"6\u20139", note:"IFL \u00b7 Western. Did Not Qualify", post:"", games:[
+      ["Mar 26", "vs Quad City Steamwheelers", "47\u201349", "L"],
+      ["Apr 03", "vs Tucson Sugar Skulls", "16\u201335", "L"],
+      ["Apr 08", "at Vegas Knight Hawks", "37\u201336", "W"],
+      ["Apr 16", "at Northern Arizona Wranglers", "9\u201348", "L"],
+      ["Apr 22", "at Tucson Sugar Skulls", "51\u201344", "W"],
+      ["Apr 30", "vs Bay Area Panthers", "51\u201354", "L"],
+      ["May 13", "at Green Bay Blizzard", "54\u201355", "L"],
+      ["May 21", "vs Duke City Gladiators", "57\u201344", "W"],
+      ["May 27", "at Frisco Fighters", "56\u201370", "L"],
+      ["Jun 04", "vs Tulsa Oilers", "56\u201355", "W"],
+      ["Jun 11", "vs Northern Arizona Wranglers", "36\u201338", "L"],
+      ["Jun 17", "at Tucson Sugar Skulls", "59\u201354", "W"],
+      ["Jun 24", "at Arizona Rattlers", "48\u201357", "L"],
+      ["Jul 10", "at Bay Area Panthers", "40\u201375", "L"],
+      ["Jul 15", "vs Vegas Knight Hawks", "58\u201342", "W"]
+    ]},
+    "2024": {rec:"10\u20136", note:"IFL \u00b7 Western. Won First round (Bay Area) 49\u201340, Lost Western Conference Championship (Arizona) 58\u201323", post:"Postseason: 1\u20131", games:[
+      ["Mar 25", "at Duke City Gladiators", "32\u201326", "W"],
+      ["Apr 01", "vs San Antonio Gunslingers", "69\u201361", "W"],
+      ["Apr 14", "at Arizona Rattlers", "55\u201345", "W"],
+      ["Apr 20", "at Bay Area Panthers", "50\u201353", "L"],
+      ["Apr 28", "vs Bay Area Panthers", "32\u201333", "L"],
+      ["May 05", "vs Northern Arizona Wranglers", "54\u201345", "W"],
+      ["May 10", "at Vegas Knight Hawks", "64\u201368", "L"],
+      ["May 19", "vs Duke City Gladiators", "47\u201321", "W"],
+      ["May 26", "vs Frisco Fighters", "41\u201344", "L"],
+      ["Jun 01", "at Tulsa Oilers", "42\u201334", "W"],
+      ["Jun 08", "vs Arizona Rattlers", "46\u201347", "L"],
+      ["Jun 16", "at Bay Area Panthers", "43\u201342", "W"],
+      ["Jun 22", "at Tucson Sugar Skulls", "41\u201340", "W"],
+      ["Jun 29", "at Northern Arizona Wranglers", "57\u201343", "W"],
+      ["Jul 06", "vs Vegas Knight Hawks", "60\u201359", "W"],
+      ["Jul 20", "vs Bay Area Panthers", "20\u201330", "L"],
+      ["Jul 28 \u00b7 PO", "at Bay Area Panthers", "49\u201340", "W"],
+      ["Aug 05 \u00b7 PO", "at Arizona Rattlers", "23\u201358", "L"]
+    ]},
+    "2025": {rec:"10\u20136", note:"IFL \u00b7 Western. Won First round (Arizona) 49\u201348, Lost Western Conference Championship (Vegas) 74\u201368", post:"Postseason: 1\u20131", games:[
+      ["Mar 31", "vs Vegas Knight Hawks", "41\u201348", "L"],
+      ["Apr 05", "at Bay Area Panthers", "18\u201341", "L"],
+      ["Apr 11", "at Vegas Knight Hawks", "35\u201327", "W"],
+      ["Apr 27", "vs Tucson Sugar Skulls", "22\u201345", "L"],
+      ["May 04", "at Bay Area Panthers", "34\u201357", "L"],
+      ["May 11", "vs Northern Arizona Wranglers", "40\u201329", "W"],
+      ["May 17", "at San Antonio Gunslingers", "48\u201349", "L"],
+      ["May 25", "vs Vegas Knight Hawks", "42\u201339", "W"],
+      ["May 31", "vs Northern Arizona Wranglers", "35\u201332", "W"],
+      ["Jun 07", "at Tucson Sugar Skulls", "58\u201342", "W"],
+      ["Jun 14", "at Northern Arizona Wranglers", "56\u201353", "W"],
+      ["Jun 22", "vs San Antonio Gunslingers", "53\u201349", "W"],
+      ["Jul 07", "vs Bay Area Panthers", "46\u201338", "W"],
+      ["Jul 12", "at Arizona Rattlers", "43\u201346", "L"],
+      ["Jul 19", "at Fishers Freight", "40\u201349", "L"],
+      ["Jul 27", "vs Arizona Rattlers", "46\u201326", "W"],
+      ["Aug 04 \u00b7 PO", "at Arizona Rattlers", "49\u201348", "W"],
+      ["Aug 08 \u00b7 PO", "at Vegas Knight Hawks", "68\u201374", "L"]
+    ]},
+    "2026": {rec:"13\u20133", note:"IFL \u00b7 Western. Won First round (Tucson) 54\u201347, Lost Western Conference Championship (Arizona) 43\u201337", post:"Postseason: 1\u20131", games:[
+      ["Mar 23", "vs Northern Arizona Wranglers", "42\u201340", "W"],
+      ["Mar 28", "at Arizona Rattlers", "27\u201349", "L"],
+      ["Apr 11", "at Tucson Sugar Skulls", "48\u201342", "W"],
+      ["Apr 17", "vs Quad City Steamwheelers", "73\u201359", "W"],
+      ["Apr 26", "vs Tucson Sugar Skulls", "48\u201325", "W"],
+      ["May 02", "at Tulsa Oilers", "42\u201351", "L"],
+      ["May 16", "at San Antonio Gunslingers", "48\u201336", "W"],
+      ["May 23", "vs Northern Arizona Wranglers", "67\u201335", "W"],
+      ["May 31", "at New Mexico Chupacabras", "55\u201345", "W"],
+      ["Jun 14", "at Northern Arizona Wranglers", "52\u201337", "W"],
+      ["Jun 19", "vs Vegas Knight Hawks", "43\u201339", "W"],
+      ["Jun 28", "at Jacksonville Sharks", "62\u201355", "W"],
+      ["Jul 06", "vs Arizona Rattlers", "36\u201365", "L"],
+      ["Jul 12", "at Vegas Knight Hawks", "52\u201338", "W"],
+      ["Jul 18", "vs New Mexico Chupacabras", "70\u201330", "W"],
+      ["Jul 24", "vs Tucson Sugar Skulls", "40\u201336", "W"],
+      ["Aug 02 \u00b7 PO", "vs Tucson Sugar Skulls", "54\u201347", "W"],
+      ["Aug 09 \u00b7 PO", "vs Arizona Rattlers", "37\u201343", "L"]
+    ]}
+  };
+  var seasonSelect = document.getElementById('season-select');
+  var yrEl = document.getElementById('season-yr');
+  var noteEl = document.getElementById('season-note');
+  var recEl = document.getElementById('season-rec');
+  var postEl = document.getElementById('season-post');
+  var gamesEl = document.getElementById('season-games');
+  function renderSeason(y){
+    var d = seasonData[y];
+    yrEl.textContent = y;
+    noteEl.textContent = d.note;
+    recEl.innerHTML = d.rec;
+    postEl.textContent = d.post;
+    postEl.style.display = d.post ? 'block' : 'none';
+    if(d.games && d.games.length){
+      var html = '<div class="schedule">';
+      d.games.forEach(function(g){
+        var isPlayoff = g[0].indexOf('PO') !== -1;
+        var wl = g[3];
+        html += '<div class="game-row'+(isPlayoff?' playoff':'')+'">'
+          + '<span class="date">'+g[0]+'</span>'
+          + '<span class="opp">'+g[1]+'</span>'
+          + '<span class="score mono">'+g[2]+'</span>'
+          + '<span class="wl '+(wl==='W'?'w':'l')+'">'+wl+'</span>'
+          + '</div>';
+      });
+      html += '</div>';
+      gamesEl.innerHTML = html;
+    } else {
+      gamesEl.innerHTML = '<div class="empty">Game-by-game box scores for '+y+' aren\'t in the archive yet &mdash; season record only.</div>';
+    }
+  }
+  seasonSelect.addEventListener('change', function(){ renderSeason(this.value); });
+  renderSeason('2026');
+
+  var unitSelect = document.getElementById('unit-filter');
+  var cards = document.querySelectorAll('#leaders-grid .leader-card');
+  unitSelect.addEventListener('change', function(){
+    var val = this.value;
+    cards.forEach(function(c){ c.style.display = (c.getAttribute('data-unit') === val) ? '' : 'none'; });
+  });
+
+  var recordsSelect = document.getElementById('records-filter');
+  var recordBodies = document.querySelectorAll('.records-table tbody');
+  recordsSelect.addEventListener('change', function(){
+    var val = this.value;
+    recordBodies.forEach(function(tb){ tb.style.display = (tb.getAttribute('data-unit') === val) ? '' : 'none'; });
+  });
+</script>
+
+<footer>
+  <span>Indoor Football Index &middot; Team data compiled from IFL box scores and franchise records.</span>
+  <span>San Diego Strike Force &middot; IFL</span>
+</footer>
+
+</body>
+</html>

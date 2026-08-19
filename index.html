@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--arena-black);
+    color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+
+  .hashes{width:100%; height:14px; display:flex; align-items:center;}
+  .hashes svg{width:100%; height:100%; display:block;}
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    max-width:1160px; margin:0 auto; padding:22px 24px 0;
+  }
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:28px; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  .hero{max-width:1160px; margin:0 auto; padding:64px 24px 44px;}
+  .hero .eyebrow{
+    font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--crimson);
+    font-weight:600; margin:0 0 14px;
+  }
+  .hero h1{font-size:clamp(44px,7vw,84px); line-height:0.92; margin:0 0 18px; color:var(--chalk);}
+  .hero p{font-size:16px; color:var(--steel); max-width:560px; line-height:1.7; margin:0 0 26px;}
+  .hero .cta{
+    display:inline-flex; align-items:center; gap:8px; background:var(--crimson); color:var(--chalk);
+    font-size:14px; font-weight:600; padding:13px 22px; border-radius:8px;
+  }
+  .hero .cta:hover{background:#b81f31;}
+
+  section{max-width:1160px; margin:0 auto; padding:48px 24px;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; gap:16px; flex-wrap:wrap;}
+  .section-head h2{font-size:24px; margin:0; color:var(--chalk);}
+  .section-head .note{font-size:13px; color:var(--steel);}
+
+  .hrow{
+    display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;
+  }
+  .hrow::-webkit-scrollbar{height:6px;}
+  .hrow::-webkit-scrollbar-thumb{background:var(--card-line); border-radius:6px;}
+
+  .game-card{
+    flex:0 0 220px; background:var(--card); border:1px solid var(--card-line); border-radius:10px;
+    padding:16px 18px; scroll-snap-align:start;
+  }
+  .game-card .meta{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin-bottom:12px; display:flex; justify-content:space-between;}
+  .game-card .meta .tag{color:var(--amber);}
+  .game-card .matchup{font-size:14px; color:var(--chalk-dim); line-height:1.6;}
+  .game-card .matchup b{color:var(--chalk); font-weight:600;}
+  .game-card .score-row{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+  .game-card .score{font-family:'IBM Plex Mono',monospace; font-size:20px; color:var(--chalk);}
+  .game-card .wl{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px;
+  }
+  .wl.w{background:rgba(60,110,71,0.25); color:#7fc492;}
+  .wl.l{background:rgba(212,38,58,0.2); color:#f0919c;}
+
+  .tba-strip{
+    border:1px dashed var(--card-line); border-radius:10px; padding:28px 24px; text-align:center;
+  }
+  .tba-strip .big{font-size:15px; color:var(--chalk-dim); margin-bottom:6px;}
+  .tba-strip .small{font-size:13px; color:var(--steel);}
+
+  .news-grid{display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:16px;}
+  .news-card{
+    background:var(--card); border:1px solid var(--card-line); border-radius:10px;
+    padding:22px; display:flex; flex-direction:column; gap:10px;
+  }
+  .news-card.feature{grid-row:span 2; padding:28px;}
+  .news-card .kicker{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--crimson); font-weight:600;}
+  .news-card h3{font-size:18px; margin:0; color:var(--chalk); line-height:1.35;}
+  .news-card.feature h3{font-size:26px;}
+  .news-card p{font-size:14px; color:var(--chalk-dim); line-height:1.65; margin:0; flex:1;}
+  .news-card .date{font-size:12px; color:var(--steel); font-family:'IBM Plex Mono',monospace; margin-top:auto;}
+  @media (max-width:900px){
+    .news-grid{grid-template-columns:1fr 1fr;}
+    .news-card.feature{grid-row:span 1; grid-column:span 2;}
+  }
+  @media (max-width:600px){
+    .news-grid{grid-template-columns:1fr;}
+    .news-card.feature{grid-column:span 1;}
+  }
+
+  footer{
+    max-width:1160px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between;
+    flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);
+  }
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><strong>Indoor Football Index</strong></div>
+  <nav>
+    <a href="leagues.html">Leagues</a>
+    <a href="teams.html">Teams</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#news">News</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <p class="eyebrow">Indoor &amp; arena football, archived</p>
+  <h1 class="display">Every team.<br>Every season.<br>One index.</h1>
+  <p>Franchise histories, record books, and box scores for indoor and arena football &mdash; built from the ground up, one team at a time.</p>
+  <a class="cta" href="teams.html">Browse teams &rarr;</a>
+</header>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1160 14"><line x1="0" y1="7" x2="1160" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="schedule">
+  <div class="section-head">
+    <h2 class="display">Upcoming schedule</h2>
+    <p class="note">The next 10 games across every league in the archive.</p>
+  </div>
+  <div class="hrow">
+    <div class="game-card">
+      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
+      <div class="matchup">Motor City Tigers<br>at <b>Detroit Bandits</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
+      <div class="matchup">Michigan Grizzlies<br>at <b>Michigan Avengerz</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
+      <div class="matchup">Ohio Boom<br>at <b>Ohio Blitz</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
+      <div class="matchup">Lenawee Raiders<br>at <b>Hudson Hurricanes</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
+      <div class="matchup">Western PA Warhounds<br>at <b>Pittsburgh Outlaws</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
+      <div class="matchup">Southern Jersey Save<br>at <b>Pennsylvania Warhawks</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
+      <div class="matchup">Detroit Bandits<br>at <b>Maple Silver Back</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
+      <div class="matchup">Michigan Avengerz<br>at <b>Motor City Tigers</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
+      <div class="matchup">Ohio Blitz<br>at <b>Ohio Elite</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
+      <div class="matchup">Hudson Hurricanes<br>at <b>Ohio Boom</b></div>
+      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1160 14"><line x1="0" y1="7" x2="1160" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="recent">
+  <div class="section-head">
+    <h2 class="display">Recent games</h2>
+    <p class="note">The last 10 completed games across every league in the archive.</p>
+  </div>
+  <div class="hrow">
+    <div class="game-card">
+      <div class="meta"><span>Aug 16 &middot; Championship</span><span class="tag">IFL</span></div>
+      <div class="matchup">Arizona Rattlers<br>at <b>Green Bay Blizzard</b></div>
+      <div class="score-row"><span class="score">62&ndash;51</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 16 &middot; Week 2</span><span class="tag">8MIFL</span></div>
+      <div class="matchup">Lewisville Savage<br>at <b>Dallas MBG Kings</b></div>
+      <div class="score-row"><span class="score">10&ndash;22</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 16 &middot; Week 2</span><span class="tag">8MIFL</span></div>
+      <div class="matchup">Dallas Dawgs<br>at <b>Louisiana Tigers</b></div>
+      <div class="score-row"><span class="score">19&ndash;9</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 15 &middot; Playoffs Round 3</span><span class="tag">IAL</span></div>
+      <div class="matchup">Las Vegas Rockers<br>at <b>Arizona Juggernauts</b></div>
+      <div class="score-row"><span class="score">48&ndash;64</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 15 &middot; Playoffs Round 3</span><span class="tag">IAL</span></div>
+      <div class="matchup">Utah Great 8's<br>at <b>Cincinnati Slingers</b></div>
+      <div class="score-row"><span class="score">43&ndash;39</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 9 &middot; Playoffs Round 2</span><span class="tag">IFL</span></div>
+      <div class="matchup">Tulsa Oilers<br>at <b>Green Bay Blizzard</b></div>
+      <div class="score-row"><span class="score">60&ndash;67</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 9 &middot; Playoffs Round 2</span><span class="tag">IFL</span></div>
+      <div class="matchup">Arizona Rattlers<br>at <b>San Diego Strike Force</b></div>
+      <div class="score-row"><span class="score">43&ndash;37</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 9 &middot; Week 1</span><span class="tag">8MIFL</span></div>
+      <div class="matchup">Louisiana Tigers<br>at <b>Dallas MBG Kings</b></div>
+      <div class="score-row"><span class="score">31&ndash;17</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 9 &middot; Week 1</span><span class="tag">8MIFL</span></div>
+      <div class="matchup">Lewisville Savage<br>at <b>Dallas Dawgs</b></div>
+      <div class="score-row"><span class="score">0&ndash;44</span></div>
+    </div>
+    <div class="game-card">
+      <div class="meta"><span>Aug 8 &middot; Championship</span><span class="tag">AF1</span></div>
+      <div class="matchup">Albany Firebirds<br>at <b>Nashville Kats</b></div>
+      <div class="score-row"><span class="score">53&ndash;59</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1160 14"><line x1="0" y1="7" x2="1160" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
+
+<section id="news">
+  <div class="section-head">
+    <h2 class="display">News</h2>
+  </div>
+  <div class="news-grid">
+    <div class="news-card feature">
+      <div class="kicker">Season recap</div>
+      <h3>Strike Force's historic season ends in the West Championship</h3>
+      <p>San Diego closed the 2026 regular season 13–3 — the best record in franchise history — and claimed the #1 seed in the West. After a first-round win over Tucson, the run ended one game short, falling 37–43 to eventual champion Arizona in the conference title game.</p>
+      <div class="date">Aug 10, 2026</div>
+    </div>
+    <div class="news-card">
+      <div class="kicker">Franchise records</div>
+      <h3>Marques Rodgers still owns the Strike Force record book</h3>
+      <p>Five years after his final season in San Diego, Rodgers remains the franchise leader in receiving yards, receiving touchdowns, receptions, all-purpose yards, and kickoff return yards.</p>
+      <div class="date">Aug 6, 2026</div>
+    </div>
+    <div class="news-card">
+      <div class="kicker">Looking back</div>
+      <h3>Remembering the Panthers' 2023 title run</h3>
+      <p>Bay Area went 10–5 in the regular season before running the postseason table at 3–0, capturing the only championship in franchise history to date.</p>
+      <div class="date">Aug 3, 2026</div>
+    </div>
+    <div class="news-card">
+      <div class="kicker">Site update</div>
+      <h3>Welcome to the new Indoor Football Index</h3>
+      <p>Franchise histories, record books, and full box scores are going up team by team. More franchises, more seasons, and league-wide stats are on the way.</p>
+      <div class="date">Aug 19, 2026</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Indoor Football Index &middot; Team histories, records, and box scores.</span>
+  <span>Data compiled from IFL box scores and franchise archives.</span>
+</footer>
+
+</body>
+</html>
