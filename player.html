@@ -78,9 +78,9 @@
     text-align:right; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel);
     padding:10px 12px; border-bottom:1px solid var(--card-line); background:var(--card); white-space:nowrap; font-weight:500;
   }
-  thead th:first-child, thead th:nth-child(2){text-align:left;}
+  thead th:first-child, thead th:nth-child(2), thead th:nth-child(3){text-align:left;}
   tbody td{padding:9px 12px; border-bottom:1px solid var(--steel-line); text-align:right; color:var(--chalk-dim); font-family:'IBM Plex Mono',monospace; white-space:nowrap;}
-  tbody td:first-child, tbody td:nth-child(2){text-align:left; font-family:'Inter',sans-serif; color:var(--chalk);}
+  tbody td:first-child, tbody td:nth-child(2), tbody td:nth-child(3){text-align:left; font-family:'Inter',sans-serif; color:var(--chalk);}
   tbody tr:hover td{background:rgba(255,255,255,0.02);}
   tbody tr.career td{
     background:var(--arena-black-2); color:var(--chalk); font-weight:600; border-top:1px solid var(--card-line);
@@ -266,15 +266,18 @@
       var applies = rows.some(function(r){ return cat.trigger.some(function(t){ return num(r[t]) != null; }); });
       if (!applies) return '';
 
-      var headerHtml = '<th>Year</th><th>Team</th>' + cat.cols.map(function(c){ return '<th>' + c.label + '</th>'; }).join('');
+      var headerHtml = '<th>Year</th><th>Team</th><th>League</th>' + cat.cols.map(function(c){ return '<th>' + c.label + '</th>'; }).join('');
       var bodyHtml = sortedRows.map(function(r){
         var cells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(r)) + '</td>'; }).join('');
-        return '<tr><td>' + (r.Season || '&ndash;') + '</td><td>' + r.team + '</td>' + cells + '</tr>';
+        return '<tr><td>' + (r.Season || '&ndash;') + '</td><td>' + r.team + '</td><td>' + (r.League || '&ndash;') + '</td>' + cells + '</tr>';
       }).join('');
 
       var careerCells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(totals)) + '</td>'; }).join('');
       var teamCount = teams.length + ' TM' + (teams.length === 1 ? '' : 's');
-      var careerRow = '<tr class="career"><td>Career</td><td>' + teamCount + '</td>' + careerCells + '</tr>';
+      var leagueSet = [];
+      rows.forEach(function(r){ if (r.League && leagueSet.indexOf(r.League) === -1) leagueSet.push(r.League); });
+      var leagueLabel = leagueSet.length ? leagueSet.join(' / ') : '&ndash;';
+      var careerRow = '<tr class="career"><td>Career</td><td>' + teamCount + '</td><td>' + leagueLabel + '</td>' + careerCells + '</tr>';
 
       return '<div class="subhead">' + cat.title + '</div>' +
         '<div class="table-wrap"><table><thead><tr>' + headerHtml + '</tr></thead><tbody>' + bodyHtml + careerRow + '</tbody></table></div>';
