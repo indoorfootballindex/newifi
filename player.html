@@ -263,11 +263,14 @@
     var sortedRows = rows.slice().sort(function(a,b){ return (a.Season||0) - (b.Season||0); });
 
     var categoryHtml = CATEGORIES.map(function(cat){
-      var applies = rows.some(function(r){ return cat.trigger.some(function(t){ return num(r[t]) != null; }); });
-      if (!applies) return '';
+      function hasRealData(r){
+        return cat.trigger.some(function(t){ var v = num(r[t]); return v != null && v !== 0; });
+      }
+      var relevantRows = sortedRows.filter(hasRealData);
+      if (!relevantRows.length) return '';
 
       var headerHtml = '<th>Year</th><th>Team</th><th>League</th>' + cat.cols.map(function(c){ return '<th>' + c.label + '</th>'; }).join('');
-      var bodyHtml = sortedRows.map(function(r){
+      var bodyHtml = relevantRows.map(function(r){
         var cells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(r)) + '</td>'; }).join('');
         return '<tr><td>' + (r.Season || '&ndash;') + '</td><td>' + r.team + '</td><td>' + (r.League || '&ndash;') + '</td>' + cells + '</tr>';
       }).join('');
@@ -275,7 +278,7 @@
       var careerCells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(totals)) + '</td>'; }).join('');
       var teamCount = teams.length + ' TM' + (teams.length === 1 ? '' : 's');
       var leagueSet = [];
-      rows.forEach(function(r){ if (r.League && leagueSet.indexOf(r.League) === -1) leagueSet.push(r.League); });
+      relevantRows.forEach(function(r){ if (r.League && leagueSet.indexOf(r.League) === -1) leagueSet.push(r.League); });
       var leagueLabel = leagueSet.length ? leagueSet.join(' / ') : '&ndash;';
       var careerRow = '<tr class="career"><td>Career</td><td>' + teamCount + '</td><td>' + leagueLabel + '</td>' + careerCells + '</tr>';
 
