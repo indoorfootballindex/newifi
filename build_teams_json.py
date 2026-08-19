@@ -144,6 +144,12 @@ def load_schedule_by_team(wb, team_names):
         cur_away = r[CUR_AWAY_COL] if CUR_AWAY_COL < len(r) else None
         home_team = r[idx["Home Team"]]
         away_team = r[idx["Away Team"]]
+        # If Current Home/Away Name wasn't filled in for this row (common on
+        # freshly-added games before that column gets backfilled), fall back
+        # to the plain Home/Away Team value rather than silently dropping
+        # the game from both teams' pages.
+        cur_home = cur_home or home_team
+        cur_away = cur_away or away_team
         home_score = r[idx["Home Score"]]
         away_score = r[idx["Away Score"]]
         if home_score is None or away_score is None:
