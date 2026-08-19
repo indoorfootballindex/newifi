@@ -32,7 +32,11 @@ def coerce_number(v):
     """Excel sometimes stores a numeric-looking cell as text (mixed column
     formatting is common in hand-edited sheets). Convert '15' -> 15,
     '-2' -> -2, '3.5' -> 3.5, so downstream math (which only sums fields
-    where typeof === number) actually works. Non-numeric text is left as-is."""
+    where typeof === number) actually works. Non-numeric text is left as-is.
+    Also normalizes whole-number floats (8.0 -> 8), which Excel produces
+    even for genuinely-numeric cells."""
+    if isinstance(v, float) and v == int(v):
+        return int(v)
     if not isinstance(v, str):
         return v
     s = v.strip()
