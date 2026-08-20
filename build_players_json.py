@@ -96,6 +96,7 @@ def load_master(xlsx_path):
         sys.exit(1)
 
     out = []
+    bad_season_rows = []
     for r in rows[1:]:
         row = dict(zip(headers, r))
         name = row.get("Name")
@@ -108,12 +109,25 @@ def load_master(xlsx_path):
             k: coerce_number(v) for k, v in row.items()
             if k and k not in ("Name", team_col) and v is not None and v != ""
         }
+        season = stats.get("Season")
+        if not (isinstance(season, (int, float)) and 1980 <= season <= 2100):
+            bad_season_rows.append((name, team_name, season))
         out.append({
             "name": name,
             "slug": slug(name),
             "team": team_name,
             **stats,
         })
+
+    if bad_season_rows:
+        print(f"\nWARNING: {len(bad_season_rows)} row(s) have a Season value that isn't a plausible year "
+              "(likely something like a league code sitting in the Season column by mistake):")
+        for name, team_name, season in bad_season_rows[:25]:
+            print(f"  {name} ({team_name}) — Season: {season!r}")
+        if len(bad_season_rows) > 25:
+            print(f"  ...and {len(bad_season_rows) - 25} more")
+        print("These rows were still included, but will sort/display incorrectly until fixed in the source file.\n")
+
     return out
 
 
