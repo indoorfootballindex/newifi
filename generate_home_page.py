@@ -257,7 +257,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <body>
 
 <div class="topbar">
-  <div class="site"><strong>Indoor Football Index</strong></div>
+  <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a></div>
   <nav>
     <a href="leagues.html">Leagues</a>
     <a href="teams.html">Teams</a>
