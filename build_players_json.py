@@ -66,6 +66,8 @@ def load_team(xlsx_path):
         name = row.get("Name")
         if not name or str(name).strip() == "":
             continue
+        if "Season" not in row and "Year" in row:
+            row["Season"] = row.pop("Year")
         stats = {k: coerce_number(v) for k, v in row.items() if k and k != "Name" and v is not None and v != ""}
         out.append({
             "name": name,
@@ -105,6 +107,10 @@ def load_master(xlsx_path):
         team_name = row.get(team_col)
         if not team_name:
             continue
+        # Some sheets use 'Year' instead of 'Season' for the same thing —
+        # normalize to 'Season' so every page downstream can rely on it.
+        if "Season" not in row and "Year" in row:
+            row["Season"] = row.pop("Year")
         stats = {
             k: coerce_number(v) for k, v in row.items()
             if k and k not in ("Name", team_col) and v is not None and v != ""
