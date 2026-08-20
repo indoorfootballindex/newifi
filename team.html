@@ -140,6 +140,8 @@
   .wl.w{background:rgba(60,110,71,0.25); color:#7fc492;}
   .wl.l{background:rgba(212,38,58,0.2); color:#f0919c;}
   .wl.t{background:rgba(232,163,61,0.2); color:var(--amber);}
+  .game-row.playoff{background:rgba(232,163,61,0.05);}
+  .game-row.playoff .date{color:var(--amber);}
 
   .empty-state{padding:60px 24px; text-align:center; color:var(--steel);}
   .empty-state h1{color:var(--chalk); font-size:28px; margin-bottom:10px;}
@@ -421,7 +423,8 @@
         if (s.games.length){
           gamesEl.innerHTML = '<div class="schedule">' + s.games.map(function(g){
             var wlClass = g.wl==='W'?'w':(g.wl==='T'?'t':'l');
-            return '<div class="game-row"><span class="date">' + g.date + '</span><span class="opp">' + esc(g.opp) + '</span>' +
+            var rowClass = g.playoff ? ' playoff' : '';
+            return '<div class="game-row' + rowClass + '"><span class="date">' + g.date + '</span><span class="opp">' + esc(g.opp) + '</span>' +
               '<span class="score mono">' + g.score + '</span><span class="wl ' + wlClass + '">' + g.wl + '</span></div>';
           }).join('') + '</div>';
         } else {

@@ -156,7 +156,8 @@ def load_schedule_by_team(wb, team_names):
             continue
         week = r[idx["Week"]] if "Week" in idx else None
         week_low = str(week).lower()
-        is_playoff = any(k in week_low for k in ("playoff", "championship", "semifinal", "quarterfinal"))
+        is_championship = "championship" in week_low
+        is_playoff = is_championship or any(k in week_low for k in ("playoff", "semifinal", "quarterfinal"))
         year = str(date.year)
 
         for team_name, is_home in ((cur_home, True), (cur_away, False)):
@@ -176,6 +177,7 @@ def load_schedule_by_team(wb, team_names):
                 "score": f"{fmt_score(own_score)}-{fmt_score(opp_score)}",
                 "wl": wl,
                 "playoff": is_playoff,
+                "championship": is_championship,
                 "year": year,
             })
     for t in games_by_team:
@@ -242,14 +244,24 @@ def load_sbs_teams(wb):
         reg = parse_record_cell(get(r, "W-L-T"))
         if not reg:
             w, l, t = get(r, "Reg Wins"), get(r, "Reg Loss"), get(r, "Ties")
-            if w is not None and l is not None:
-                reg = f"{int(w)}-{int(l)}" + (f"-{int(t)}" if t else "")
+            try:
+                if w is not None and l is not None:
+                    reg = f"{int(w)}-{int(l)}" + (f"-{int(t)}" if t else "")
+            except (TypeError, ValueError):
+                pass  # corrupted cell (e.g. a stray date/time) — leave reg unset rather than crash
 
         post = parse_record_cell(get(r, "PO W-L"))
         if not post:
-            pw, pl = get(r, "Playoff W"), get(r, "Playoff L")
-            if pw is not None and pl is not None and (pw or pl):
-                post = f"{int(pw)}-{int(pl)}"
+            pw, pl = get(r, "Playoff W"), get(r, "Playoff Loss")
+            try:
+                if pw is not None and pl is not None and (pw or pl):
+                    post = f"{int(pw)}-{int(pl)}"
+            except (TypeError, ValueError):
+                pass
+
+        logo = esc_none(get(r, "Logo"))
+        if logo and str(logo).strip().lower() in ("no match", "n/a", "none", "-"):
+            logo = None
 
         out[(current_name, year)] = {
             "league": esc_none(get(r, "League")),
@@ -258,7 +270,7 @@ def load_sbs_teams(wb):
             "conference": esc_none(get(r, "Conference")),
             "division": esc_none(get(r, "Division")),
             "result": esc_none(get(r, "Result")),
-            "logo": esc_none(get(r, "Logo")),
+            "logo": logo,
         }
     return out
 
@@ -276,10 +288,11 @@ def build_seasons(games):
             "post": season_summary(post_games) if post_games else None,
             "games": [
                 {
-                    "date": g["dateLabel"] + (" \u00b7 PO" if g["playoff"] else ""),
+                    "date": g["dateLabel"] + (" \u00b7 CH" if g.get("championship") else (" \u00b7 PO" if g["playoff"] else "")),
                     "opp": ("vs " if g["home"] else "at ") + g["opp"],
                     "score": g["score"].replace("-", "\u2013"),
                     "wl": g["wl"],
+                    "playoff": g["playoff"],
                 }
                 for g in yr_games
             ],
