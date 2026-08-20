@@ -35,7 +35,7 @@ def main():
     parser = argparse.ArgumentParser(description="Regenerate the Indoor Football Index site's data files.")
     parser.add_argument("--master", default="Master.xlsx", help="Path to the player-stats workbook (default: Master.xlsx)")
     parser.add_argument("--ifi", default="2026_IFI.xlsx", help="Path to the schedule/teams workbook (default: 2026_IFI.xlsx)")
-    parser.add_argument("--site", default="site", help="Output folder (default: site)")
+    parser.add_argument("--site", default=".", help="Output folder (default: current folder)")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))

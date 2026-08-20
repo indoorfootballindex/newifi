@@ -214,6 +214,55 @@ def season_summary(games):
     return f"{w}-{l}" + (f"-{t}" if t else "")
 
 
+def load_sbs_teams(wb):
+    """Reads the 'SBS Teams' tab (Team, League, Year, Reg Wins, Reg Loss,
+    Ties, Playoff W, Playoff L, W-L-T, PO W-L, Conference, Division, Result,
+    Current Name, Logo) if present. Matched on Current Name + Year so a
+    franchise's season history follows it across any past rebrands, same as
+    everywhere else. Returns {(current_name, year_str): {...}}, or {} if the
+    tab doesn't exist yet."""
+    if "SBS Teams" not in wb.sheetnames:
+        return {}
+    ws = wb["SBS Teams"]
+    rows = list(ws.iter_rows(values_only=True))
+    headers = rows[0]
+    idx = {h: i for i, h in enumerate(headers) if h is not None}
+
+    def get(r, col):
+        return r[idx[col]] if col in idx and idx[col] < len(r) else None
+
+    out = {}
+    for r in rows[1:]:
+        current_name = get(r, "Current Name")
+        year = get(r, "Year")
+        if not current_name or year is None:
+            continue
+        year = str(int(year)) if isinstance(year, (int, float)) else str(year)
+
+        reg = parse_record_cell(get(r, "W-L-T"))
+        if not reg:
+            w, l, t = get(r, "Reg Wins"), get(r, "Reg Loss"), get(r, "Ties")
+            if w is not None and l is not None:
+                reg = f"{int(w)}-{int(l)}" + (f"-{int(t)}" if t else "")
+
+        post = parse_record_cell(get(r, "PO W-L"))
+        if not post:
+            pw, pl = get(r, "Playoff W"), get(r, "Playoff L")
+            if pw is not None and pl is not None and (pw or pl):
+                post = f"{int(pw)}-{int(pl)}"
+
+        out[(current_name, year)] = {
+            "league": esc_none(get(r, "League")),
+            "reg": reg,
+            "post": post,
+            "conference": esc_none(get(r, "Conference")),
+            "division": esc_none(get(r, "Division")),
+            "result": esc_none(get(r, "Result")),
+            "logo": esc_none(get(r, "Logo")),
+        }
+    return out
+
+
 def build_seasons(games):
     by_year = defaultdict(list)
     for g in games:
@@ -256,6 +305,30 @@ def main():
         if games:
             matched += 1
     print(f"Matched schedule data for {matched}/{len(bio)} teams")
+
+    sbs = load_sbs_teams(wb)
+    if sbs:
+        by_team = defaultdict(list)
+        for (cur_name, year), row in sbs.items():
+            by_team[cur_name].append((year, row))
+
+        sbs_overrides = 0
+        for name, team in bio.items():
+            for year, row in by_team.get(name, []):
+                sbs_overrides += 1
+                existing = team["seasons"].get(year, {"games": []})
+                if row["reg"]:
+                    existing["reg"] = row["reg"]
+                if row["post"]:
+                    existing["post"] = row["post"]
+                existing["league"] = row["league"]
+                existing["conference"] = row["conference"]
+                existing["division"] = row["division"]
+                existing["result"] = row["result"]
+                if row["logo"]:
+                    existing["logo"] = row["logo"]
+                team["seasons"][year] = existing
+        print(f"Applied {sbs_overrides} season records from 'SBS Teams' tab")
 
     out = list(bio.values())
     with open(out_path, "w", encoding="utf-8") as f:

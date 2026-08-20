@@ -406,11 +406,16 @@
       function renderSeason(y){
         var s = team.seasons[y];
         document.getElementById('season-yr').textContent = y;
-        document.getElementById('season-rec').innerHTML = s.reg.replace('-', '\u2013');
+        document.getElementById('season-rec').innerHTML = (s.reg || '0-0').replace('-', '\u2013');
         var postEl = document.getElementById('season-post');
         if (s.post){ postEl.textContent = 'Postseason: ' + s.post.replace('-', '\u2013'); postEl.style.display='block'; }
         else { postEl.style.display = 'none'; }
-        document.getElementById('season-note').textContent = s.games.length + ' games played.';
+
+        var noteBits = [];
+        if (s.league) noteBits.push(s.conference ? (s.league + ' \u00b7 ' + s.conference) : s.league);
+        noteBits.push(s.result || (s.games.length + ' games played.'));
+        document.getElementById('season-note').textContent = noteBits.join(' \u2014 ');
+
         var gamesEl = document.getElementById('season-games');
         if (s.games.length){
           gamesEl.innerHTML = '<div class="schedule">' + s.games.map(function(g){
@@ -419,7 +424,7 @@
               '<span class="score mono">' + g.score + '</span><span class="wl ' + wlClass + '">' + g.wl + '</span></div>';
           }).join('') + '</div>';
         } else {
-          gamesEl.innerHTML = '<div class="empty">No games on file for this season.</div>';
+          gamesEl.innerHTML = '<div class="empty">No game-by-game box scores on file for this season.</div>';
         }
       }
       seasonSelect.addEventListener('change', function(){ renderSeason(this.value); });
