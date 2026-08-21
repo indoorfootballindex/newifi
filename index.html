@@ -67,27 +67,32 @@
   .section-head h2{font-size:24px; margin:0; color:var(--chalk);}
   .section-head .note{font-size:13px; color:var(--steel);}
 
-  .hrow{
-    display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;
-  }
-  .hrow::-webkit-scrollbar{height:6px;}
-  .hrow::-webkit-scrollbar-thumb{background:var(--card-line); border-radius:6px;}
+  .game-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:900px){.game-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){.game-grid{grid-template-columns:1fr;}}
 
-  .game-card{
-    flex:0 0 220px; background:var(--card); border:1px solid var(--card-line); border-radius:10px;
-    padding:16px 18px; scroll-snap-align:start;
+  .game-card{background:var(--card); border:1px solid var(--card-line); border-radius:12px; padding:16px;}
+  .game-card.playoff{border-color:rgba(232,163,61,0.35);}
+  .game-card-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .game-card-head .date{font-size:12px; color:var(--chalk-dim);}
+  .game-card-head .league{font-size:11px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .game-status{text-align:center; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); margin-bottom:10px;}
+  .game-status.live-time{color:var(--turf);}
+  .matchup{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;}
+  .team-block{flex:1; text-align:center; min-width:0;}
+  .team-block .logo{width:44px; height:44px; margin:0 auto 8px; border-radius:8px; background:var(--arena-black-2); display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .team-block .logo img{width:100%; height:100%; object-fit:contain; padding:5px;}
+  .team-block .name{font-size:12px; color:var(--chalk); font-weight:600; line-height:1.3;}
+  .team-block .score{font-size:22px; color:var(--amber); font-family:'IBM Plex Mono',monospace; margin-top:6px;}
+  .team-block.loser .score{color:var(--steel);}
+  .vs-sep{font-size:11px; color:var(--steel); flex-shrink:0;}
+  .game-card-foot{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .watch-btn{
+    font-size:11px; padding:6px 12px; border-radius:6px; background:var(--arena-black-2); color:var(--chalk-dim);
+    border:1px solid var(--card-line); font-weight:600; text-decoration:none;
   }
-  .game-card .meta{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin-bottom:12px; display:flex; justify-content:space-between;}
-  .game-card .meta .tag{color:var(--amber);}
-  .game-card .matchup{font-size:14px; color:var(--chalk-dim); line-height:1.6;}
-  .game-card .matchup b{color:var(--chalk); font-weight:600;}
-  .game-card .score-row{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
-  .game-card .score{font-family:'IBM Plex Mono',monospace; font-size:20px; color:var(--chalk);}
-  .game-card .wl{
-    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px;
-  }
-  .wl.w{background:rgba(60,110,71,0.25); color:#7fc492;}
-  .wl.l{background:rgba(212,38,58,0.2); color:#f0919c;}
+  .watch-btn:hover{color:var(--chalk); border-color:var(--steel);}
+  .week-label{font-size:11px; color:var(--steel); margin-left:auto;}
 
   .tba-strip{
     border:1px dashed var(--card-line); border-radius:10px; padding:28px 24px; text-align:center;
@@ -150,56 +155,66 @@
     <h2 class="display">Upcoming schedule</h2>
     <p class="note">The next 10 games across every league in the archive.</p>
   </div>
-  <div class="hrow">
+  <div class="game-grid">
     <div class="game-card">
-      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
-      <div class="matchup">Motor City Tigers<br>at <b>Detroit Bandits</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Sep 26, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Motor City Tigers</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Detroit Bandits</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
-      <div class="matchup">Michigan Grizzlies<br>at <b>Michigan Avengerz</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Sep 26, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"><img src="https://i.imgur.com/F6xJm03.jpeg" alt="Michigan Grizzlies logo" onerror="this.style.display='none'"></div><div class="name">Michigan Grizzlies</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"><img src="https://greatlakesarenafootball.com/wp-content/uploads/2024/02/Blue-and-White-Circle-Surfing-Club-Logo-10-300x300.png" alt="Michigan Avengerz logo" onerror="this.style.display='none'"></div><div class="name">Michigan Avengerz</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
-      <div class="matchup">Ohio Boom<br>at <b>Ohio Blitz</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Sep 26, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"><img src="https://i.imgur.com/Mwv8A77.png" alt="Ohio Boom logo" onerror="this.style.display='none'"></div><div class="name">Ohio Boom</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"><img src="https://i.imgur.com/wQ6PXPx.png" alt="Ohio Blitz logo" onerror="this.style.display='none'"></div><div class="name">Ohio Blitz</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
-      <div class="matchup">Lenawee Raiders<br>at <b>Hudson Hurricanes</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Sep 26, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Lenawee Raiders</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Hudson Hurricanes</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
-      <div class="matchup">Western PA Warhounds<br>at <b>Pittsburgh Outlaws</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Sep 26, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Western PA Warhounds</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkfPBwsjYlUGWBrEh90SL5a2zMX-bqJxMOiQ&amp;s" alt="Pittsburgh Outlaws logo" onerror="this.style.display='none'"></div><div class="name">Pittsburgh Outlaws</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Sep 26 &middot; Week 1</span><span class="tag">WIF</span></div>
-      <div class="matchup">Southern Jersey Save<br>at <b>Pennsylvania Warhawks</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Sep 26, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Southern Jersey Save</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Pennsylvania Warhawks</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
-      <div class="matchup">Detroit Bandits<br>at <b>Maple Silver Back</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Oct 3, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Detroit Bandits</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Maple Silver Back</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
-      <div class="matchup">Michigan Avengerz<br>at <b>Motor City Tigers</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Oct 3, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"><img src="https://greatlakesarenafootball.com/wp-content/uploads/2024/02/Blue-and-White-Circle-Surfing-Club-Logo-10-300x300.png" alt="Michigan Avengerz logo" onerror="this.style.display='none'"></div><div class="name">Michigan Avengerz</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Motor City Tigers</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
-      <div class="matchup">Ohio Blitz<br>at <b>Ohio Elite</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Oct 3, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"><img src="https://i.imgur.com/wQ6PXPx.png" alt="Ohio Blitz logo" onerror="this.style.display='none'"></div><div class="name">Ohio Blitz</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Ohio Elite</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Oct 3 &middot; Week 2</span><span class="tag">WIF</span></div>
-      <div class="matchup">Hudson Hurricanes<br>at <b>Ohio Boom</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">TBD</span></div>
+      <div class="game-card-head"><span class="date">Oct 3, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Hudson Hurricanes</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"><img src="https://i.imgur.com/Mwv8A77.png" alt="Ohio Boom logo" onerror="this.style.display='none'"></div><div class="name">Ohio Boom</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
     </div>
   </div>
 </section>
@@ -211,56 +226,66 @@
     <h2 class="display">Recent games</h2>
     <p class="note">The last 10 completed games across every league in the archive.</p>
   </div>
-  <div class="hrow">
-    <div class="game-card">
-      <div class="meta"><span>Aug 16 &middot; Championship</span><span class="tag">IFL</span></div>
-      <div class="matchup">Arizona Rattlers<br>at <b>Green Bay Blizzard</b></div>
-      <div class="score-row"><span class="score">62&ndash;51</span></div>
+  <div class="game-grid">
+    <div class="game-card playoff">
+      <div class="game-card-head"><span class="date">Aug 16, 2026 &middot; Sunday</span><span class="league">IFL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block winner"><div class="logo"><img src="https://i.imgur.com/7gq6KT1.png" alt="Arizona Rattlers logo" onerror="this.style.display='none'"></div><div class="name">Arizona Rattlers</div><div class="score">62</div></div><span class="vs-sep">@</span><div class="team-block loser"><div class="logo"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c9/Green_Bay_Blizzard_Logo.svg/960px-Green_Bay_Blizzard_Logo.svg.png" alt="Green Bay Blizzard logo" onerror="this.style.display='none'"></div><div class="name">Green Bay Blizzard</div><div class="score">51</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Championship</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Aug 16 &middot; Week 2</span><span class="tag">8MIFL</span></div>
-      <div class="matchup">Lewisville Savage<br>at <b>Dallas MBG Kings</b></div>
-      <div class="score-row"><span class="score">10&ndash;22</span></div>
+      <div class="game-card-head"><span class="date">Aug 16, 2026 &middot; Sunday</span><span class="league">8MIFL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block loser"><div class="logo"><img src="https://i.imgur.com/uFPgmqp.jpeg" alt="Lewisville Savage logo" onerror="this.style.display='none'"></div><div class="name">Lewisville Savage</div><div class="score">10</div></div><span class="vs-sep">@</span><div class="team-block winner"><div class="logo"></div><div class="name">Dallas MBG Kings</div><div class="score">22</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Aug 16 &middot; Week 2</span><span class="tag">8MIFL</span></div>
-      <div class="matchup">Dallas Dawgs<br>at <b>Louisiana Tigers</b></div>
-      <div class="score-row"><span class="score">19&ndash;9</span></div>
+      <div class="game-card-head"><span class="date">Aug 16, 2026 &middot; Sunday</span><span class="league">8MIFL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block winner"><div class="logo"></div><div class="name">Dallas Dawgs</div><div class="score">19</div></div><span class="vs-sep">@</span><div class="team-block loser"><div class="logo"></div><div class="name">Louisiana Tigers</div><div class="score">9</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
+    </div>
+    <div class="game-card playoff">
+      <div class="game-card-head"><span class="date">Aug 15, 2026 &middot; Saturday</span><span class="league">IAL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block loser"><div class="logo"><img src="https://lasvegasrockers.com/wp-content/uploads/2025/09/42D60557-F228-46A2-AED1-9B5CC61C8552-150x150.png" alt="Las Vegas Rockers logo" onerror="this.style.display='none'"></div><div class="name">Las Vegas Rockers</div><div class="score">48</div></div><span class="vs-sep">@</span><div class="team-block winner"><div class="logo"><img src="https://www.mullettarena.com/wp-content/uploads/2026/01/AZ_EVENT_SQUARE_IMAGE_540X540-copy.png" alt="Arizona Juggernauts logo" onerror="this.style.display='none'"></div><div class="name">Arizona Juggernauts</div><div class="score">64</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Playoffs Round 3</span></div>
+    </div>
+    <div class="game-card playoff">
+      <div class="game-card-head"><span class="date">Aug 15, 2026 &middot; Saturday</span><span class="league">IAL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block winner"><div class="logo"><img src="https://utahgr8s.com/wp-content/uploads/2025/12/cropped-UTAHGR8S_LOGO-scaled-1-150x150.png" alt="Utah Great 8's logo" onerror="this.style.display='none'"></div><div class="name">Utah Great 8's</div><div class="score">43</div></div><span class="vs-sep">@</span><div class="team-block loser"><div class="logo"><img src="https://cincinnatislingers.com/wp-content/uploads/2025/10/Cincinnati-Logo-Header-150x150.png" alt="Cincinnati Slingers logo" onerror="this.style.display='none'"></div><div class="name">Cincinnati Slingers</div><div class="score">39</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Playoffs Round 3</span></div>
+    </div>
+    <div class="game-card playoff">
+      <div class="game-card-head"><span class="date">Aug 9, 2026 &middot; Sunday</span><span class="league">IFL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block loser"><div class="logo"><img src="https://i.imgur.com/8ZIsDTR.png" alt="Tulsa Oilers logo" onerror="this.style.display='none'"></div><div class="name">Tulsa Oilers</div><div class="score">60</div></div><span class="vs-sep">@</span><div class="team-block winner"><div class="logo"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c9/Green_Bay_Blizzard_Logo.svg/960px-Green_Bay_Blizzard_Logo.svg.png" alt="Green Bay Blizzard logo" onerror="this.style.display='none'"></div><div class="name">Green Bay Blizzard</div><div class="score">67</div></div></div>
+      <div class="game-card-foot"><a class="watch-btn" href="https://sports.yahoo.com/watch/" target="_blank" rel="noopener">Watch</a><span class="week-label">Playoffs Round 2</span></div>
+    </div>
+    <div class="game-card playoff">
+      <div class="game-card-head"><span class="date">Aug 9, 2026 &middot; Sunday</span><span class="league">IFL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block winner"><div class="logo"><img src="https://i.imgur.com/7gq6KT1.png" alt="Arizona Rattlers logo" onerror="this.style.display='none'"></div><div class="name">Arizona Rattlers</div><div class="score">43</div></div><span class="vs-sep">@</span><div class="team-block loser"><div class="logo"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/88/San_Diego_Strike_Force_Logo.svg/250px-San_Diego_Strike_Force_Logo.svg.png" alt="San Diego Strike Force logo" onerror="this.style.display='none'"></div><div class="name">San Diego Strike Force</div><div class="score">37</div></div></div>
+      <div class="game-card-foot"><a class="watch-btn" href="https://sports.yahoo.com/watch/" target="_blank" rel="noopener">Watch</a><span class="week-label">Playoffs Round 2</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Aug 15 &middot; Playoffs Round 3</span><span class="tag">IAL</span></div>
-      <div class="matchup">Las Vegas Rockers<br>at <b>Arizona Juggernauts</b></div>
-      <div class="score-row"><span class="score">48&ndash;64</span></div>
+      <div class="game-card-head"><span class="date">Aug 9, 2026 &middot; Sunday</span><span class="league">8MIFL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block winner"><div class="logo"></div><div class="name">Louisiana Tigers</div><div class="score">31</div></div><span class="vs-sep">@</span><div class="team-block loser"><div class="logo"></div><div class="name">Dallas MBG Kings</div><div class="score">17</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
     <div class="game-card">
-      <div class="meta"><span>Aug 15 &middot; Playoffs Round 3</span><span class="tag">IAL</span></div>
-      <div class="matchup">Utah Great 8's<br>at <b>Cincinnati Slingers</b></div>
-      <div class="score-row"><span class="score">43&ndash;39</span></div>
+      <div class="game-card-head"><span class="date">Aug 9, 2026 &middot; Sunday</span><span class="league">8MIFL</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block loser"><div class="logo"><img src="https://i.imgur.com/uFPgmqp.jpeg" alt="Lewisville Savage logo" onerror="this.style.display='none'"></div><div class="name">Lewisville Savage</div><div class="score">0</div></div><span class="vs-sep">@</span><div class="team-block winner"><div class="logo"></div><div class="name">Dallas Dawgs</div><div class="score">44</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 1</span></div>
     </div>
-    <div class="game-card">
-      <div class="meta"><span>Aug 9 &middot; Playoffs Round 2</span><span class="tag">IFL</span></div>
-      <div class="matchup">Tulsa Oilers<br>at <b>Green Bay Blizzard</b></div>
-      <div class="score-row"><span class="score">60&ndash;67</span></div>
-    </div>
-    <div class="game-card">
-      <div class="meta"><span>Aug 9 &middot; Playoffs Round 2</span><span class="tag">IFL</span></div>
-      <div class="matchup">Arizona Rattlers<br>at <b>San Diego Strike Force</b></div>
-      <div class="score-row"><span class="score">43&ndash;37</span></div>
-    </div>
-    <div class="game-card">
-      <div class="meta"><span>Aug 9 &middot; Week 1</span><span class="tag">8MIFL</span></div>
-      <div class="matchup">Louisiana Tigers<br>at <b>Dallas MBG Kings</b></div>
-      <div class="score-row"><span class="score">31&ndash;17</span></div>
-    </div>
-    <div class="game-card">
-      <div class="meta"><span>Aug 9 &middot; Week 1</span><span class="tag">8MIFL</span></div>
-      <div class="matchup">Lewisville Savage<br>at <b>Dallas Dawgs</b></div>
-      <div class="score-row"><span class="score">0&ndash;44</span></div>
-    </div>
-    <div class="game-card">
-      <div class="meta"><span>Aug 8 &middot; Championship</span><span class="tag">AF1</span></div>
-      <div class="matchup">Albany Firebirds<br>at <b>Nashville Kats</b></div>
-      <div class="score-row"><span class="score">53&ndash;59</span></div>
+    <div class="game-card playoff">
+      <div class="game-card-head"><span class="date">Aug 8, 2026 &middot; Saturday</span><span class="league">AF1</span></div>
+      <div class="game-status">Final</div>
+      <div class="matchup"><div class="team-block loser"><div class="logo"><img src="https://upload.wikimedia.org/wikipedia/en/a/af/Albany_Firebirds_2023.png" alt="Albany Firebirds logo" onerror="this.style.display='none'"></div><div class="name">Albany Firebirds</div><div class="score">53</div></div><span class="vs-sep">@</span><div class="team-block winner"><div class="logo"></div><div class="name">Nashville Kats</div><div class="score">59</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Championship</span></div>
     </div>
   </div>
 </section>

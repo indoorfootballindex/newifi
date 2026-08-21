@@ -77,40 +77,71 @@ def load_schedule(xlsx_path):
             continue
         home_score = r[idx["Home Score"]] if "Home Score" in idx else None
         away_score = r[idx["Away Score"]] if "Away Score" in idx else None
+        week = r[idx["Week"]] if "Week" in idx else None
+        week_low = str(week).lower()
+        is_championship = "championship" in week_low
+        is_playoff = is_championship or any(k in week_low for k in ("playoff", "semifinal", "quarterfinal"))
         games.append({
             "date": date,
+            "dow": r[idx["Day of the Week"]] if "Day of the Week" in idx else None,
             "home": home,
             "away": away,
             "time": r[idx["Time (CST)"]] if "Time (CST)" in idx else None,
-            "week": r[idx["Week"]] if "Week" in idx else None,
+            "week": week,
             "league": r[idx["League"]] if "League" in idx else None,
+            "watch": r[idx["Watch"]] if "Watch" in idx else None,
             "home_score": home_score,
             "away_score": away_score,
             "played": home_score is not None and away_score is not None,
+            "playoff": is_playoff,
+            "championship": is_championship,
         })
     return games
 
 
-def recent_card(g):
-    date_label = g["date"].strftime("%b %-d" if sys.platform != "win32" else "%b %#d")
-    week = esc(g["week"]) if g["week"] else ""
-    league = esc(g["league"]) if g["league"] else ""
-    return f'''    <div class="game-card">
-      <div class="meta"><span>{date_label}{" &middot; " + week if week else ""}</span><span class="tag">{league}</span></div>
-      <div class="matchup">{esc(g["away"])}<br>at <b>{esc(g["home"])}</b></div>
-      <div class="score-row"><span class="score">{fmt_score(g["away_score"])}&ndash;{fmt_score(g["home_score"])}</span></div>
-    </div>'''
+def load_team_logos(xlsx_path):
+    wb = openpyxl.load_workbook(xlsx_path, data_only=True)
+    if "All Teams" not in wb.sheetnames:
+        return {}
+    ws = wb["All Teams"]
+    rows = list(ws.iter_rows(values_only=True))
+    headers = rows[0]
+    idx = {h: i for i, h in enumerate(headers) if h is not None}
+    if "Team Name" not in idx or "Logo" not in idx:
+        return {}
+    logos = {}
+    for r in rows[1:]:
+        name = r[idx["Team Name"]]
+        logo = r[idx["Logo"]]
+        if name and logo:
+            logos[name] = logo
+    return logos
 
 
-def upcoming_card(g):
-    date_label = g["date"].strftime("%b %-d" if sys.platform != "win32" else "%b %#d")
-    week = esc(g["week"]) if g["week"] else ""
+def team_block(name, score, other_score, played, logos):
+    logo_url = logos.get(name)
+    logo_html = f'<img src="{esc(logo_url)}" alt="{esc(name)} logo" onerror="this.style.display=\'none\'">' if logo_url else ""
+    cls = "team-block"
+    if played and score is not None and other_score is not None:
+        cls += " winner" if score > other_score else " loser"
+    score_html = f'<div class="score">{fmt_score(score)}</div>' if played and score is not None else ""
+    return f'<div class="{cls}"><div class="logo">{logo_html}</div><div class="name">{esc(name)}</div>{score_html}</div>'
+
+
+def game_card(g, logos):
+    date_label = g["date"].strftime("%b %-d, %Y" if sys.platform != "win32" else "%b %#d, %Y")
+    dow = f' &middot; {esc(g["dow"])}' if g["dow"] else ""
     league = esc(g["league"]) if g["league"] else ""
-    time_label = esc(g["time"]) if g["time"] else "TBD"
-    return f'''    <div class="game-card">
-      <div class="meta"><span>{date_label}{" &middot; " + week if week else ""}</span><span class="tag">{league}</span></div>
-      <div class="matchup">{esc(g["away"])}<br>at <b>{esc(g["home"])}</b></div>
-      <div class="score-row"><span class="score mono" style="font-size:14px; color:var(--steel);">{time_label}</span></div>
+    card_cls = "game-card playoff" if g["playoff"] else "game-card"
+    status_html = '<div class="game-status">Final</div>' if g["played"] else \
+        f'<div class="game-status live-time">{esc(g["time"]) if g["time"] else "Time TBD"}</div>'
+    watch_html = f'<a class="watch-btn" href="{esc(g["watch"])}" target="_blank" rel="noopener">Watch</a>' if g.get("watch") else "<span></span>"
+    week_label = "Championship" if g["championship"] else (esc(g["week"]) if g["week"] else "")
+    return f'''    <div class="{card_cls}">
+      <div class="game-card-head"><span class="date">{date_label}{dow}</span><span class="league">{league}</span></div>
+      {status_html}
+      <div class="matchup">{team_block(g["away"], g["away_score"], g["home_score"], g["played"], logos)}<span class="vs-sep">@</span>{team_block(g["home"], g["home_score"], g["away_score"], g["played"], logos)}</div>
+      <div class="game-card-foot">{watch_html}<span class="week-label">{week_label}</span></div>
     </div>'''
 
 
@@ -198,27 +229,32 @@ TEMPLATE = r"""<!DOCTYPE html>
   .section-head h2{{font-size:24px; margin:0; color:var(--chalk);}}
   .section-head .note{{font-size:13px; color:var(--steel);}}
 
-  .hrow{{
-    display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;
-  }}
-  .hrow::-webkit-scrollbar{{height:6px;}}
-  .hrow::-webkit-scrollbar-thumb{{background:var(--card-line); border-radius:6px;}}
+  .game-grid{{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}}
+  @media (max-width:900px){{.game-grid{{grid-template-columns:repeat(2,1fr);}}}}
+  @media (max-width:600px){{.game-grid{{grid-template-columns:1fr;}}}}
 
-  .game-card{{
-    flex:0 0 220px; background:var(--card); border:1px solid var(--card-line); border-radius:10px;
-    padding:16px 18px; scroll-snap-align:start;
+  .game-card{{background:var(--card); border:1px solid var(--card-line); border-radius:12px; padding:16px;}}
+  .game-card.playoff{{border-color:rgba(232,163,61,0.35);}}
+  .game-card-head{{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}}
+  .game-card-head .date{{font-size:12px; color:var(--chalk-dim);}}
+  .game-card-head .league{{font-size:11px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}}
+  .game-status{{text-align:center; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); margin-bottom:10px;}}
+  .game-status.live-time{{color:var(--turf);}}
+  .matchup{{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;}}
+  .team-block{{flex:1; text-align:center; min-width:0;}}
+  .team-block .logo{{width:44px; height:44px; margin:0 auto 8px; border-radius:8px; background:var(--arena-black-2); display:flex; align-items:center; justify-content:center; overflow:hidden;}}
+  .team-block .logo img{{width:100%; height:100%; object-fit:contain; padding:5px;}}
+  .team-block .name{{font-size:12px; color:var(--chalk); font-weight:600; line-height:1.3;}}
+  .team-block .score{{font-size:22px; color:var(--amber); font-family:'IBM Plex Mono',monospace; margin-top:6px;}}
+  .team-block.loser .score{{color:var(--steel);}}
+  .vs-sep{{font-size:11px; color:var(--steel); flex-shrink:0;}}
+  .game-card-foot{{display:flex; justify-content:space-between; align-items:center; gap:8px;}}
+  .watch-btn{{
+    font-size:11px; padding:6px 12px; border-radius:6px; background:var(--arena-black-2); color:var(--chalk-dim);
+    border:1px solid var(--card-line); font-weight:600; text-decoration:none;
   }}
-  .game-card .meta{{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin-bottom:12px; display:flex; justify-content:space-between;}}
-  .game-card .meta .tag{{color:var(--amber);}}
-  .game-card .matchup{{font-size:14px; color:var(--chalk-dim); line-height:1.6;}}
-  .game-card .matchup b{{color:var(--chalk); font-weight:600;}}
-  .game-card .score-row{{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}}
-  .game-card .score{{font-family:'IBM Plex Mono',monospace; font-size:20px; color:var(--chalk);}}
-  .game-card .wl{{
-    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px;
-  }}
-  .wl.w{{background:rgba(60,110,71,0.25); color:#7fc492;}}
-  .wl.l{{background:rgba(212,38,58,0.2); color:#f0919c;}}
+  .watch-btn:hover{{color:var(--chalk); border-color:var(--steel);}}
+  .week-label{{font-size:11px; color:var(--steel); margin-left:auto;}}
 
   .tba-strip{{
     border:1px dashed var(--card-line); border-radius:10px; padding:28px 24px; text-align:center;
@@ -317,6 +353,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 
 def generate(xlsx_path, out_path):
     games = load_schedule(xlsx_path)
+    logos = load_team_logos(xlsx_path)
     today = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
     completed = [g for g in games if g["played"] and g["date"] <= today]
@@ -328,13 +365,13 @@ def generate(xlsx_path, out_path):
     upcoming = upcoming[:10]
 
     if recent:
-        recent_html = '  <div class="hrow">\n' + "\n".join(recent_card(g) for g in recent) + "\n  </div>"
+        recent_html = '  <div class="game-grid">\n' + "\n".join(game_card(g, logos) for g in recent) + "\n  </div>"
     else:
         recent_html = ('  <div class="tba-strip"><div class="big">No completed games found before today.'
                         '</div><div class="small">Check that the Schedule tab has scores filled in.</div></div>')
 
     if upcoming:
-        upcoming_html = '  <div class="hrow">\n' + "\n".join(upcoming_card(g) for g in upcoming) + "\n  </div>"
+        upcoming_html = '  <div class="game-grid">\n' + "\n".join(game_card(g, logos) for g in upcoming) + "\n  </div>"
     else:
         upcoming_html = ('  <div class="tba-strip"><div class="big">No upcoming games found.</div>'
                           '<div class="small">Check that the Schedule tab has future dates without scores.</div></div>')
