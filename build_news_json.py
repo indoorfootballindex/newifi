@@ -71,7 +71,7 @@ def convert_body(path, article_slug, images_root):
 
     result = subprocess.run(
         ["pandoc", path, "-t", "html", f"--extract-media={media_dir}"],
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8",
     )
     if result.returncode != 0:
         raise RuntimeError(f"pandoc failed on {path}: {result.stderr}")
@@ -105,8 +105,10 @@ def main():
 
     docx_files = sorted(glob.glob(os.path.join(src_dir, "*.docx")))
     if not docx_files:
-        print(f"No .docx files found in {src_dir}")
-        sys.exit(1)
+        print(f"No .docx files found in {src_dir} — writing an empty news.json.")
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        return
 
     out_dir = os.path.dirname(os.path.abspath(out_path)) or "."
     images_root = os.path.join(out_dir, "news-images")
