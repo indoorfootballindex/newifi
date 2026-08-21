@@ -159,7 +159,7 @@
     <a href="leagues.html">Leagues</a>
     <a href="teams.html">Teams</a>
     <a href="players.html">Players</a>
-    <a href="index.html#schedule">Schedule</a>
+    <a href="schedule.html">Schedule</a>
     <a href="index.html#news">News</a>
   </nav>
 </div>
@@ -216,7 +216,11 @@
 
   function renderSnapshot(team, playerRows){
     var years = Object.keys(team.seasons).sort();
-    var latestYear = years[years.length-1];
+    // Same rule as the season dropdown: don't let a future placeholder
+    // season with no games yet (e.g. 2027 added ahead of time) become the
+    // "current season" the snapshot reports on.
+    var yearsWithGames = years.filter(function(y){ return team.seasons[y].games.length > 0; });
+    var latestYear = yearsWithGames.length ? yearsWithGames[yearsWithGames.length-1] : years[years.length-1];
     var latestReg = latestYear ? team.seasons[latestYear].reg : '\u2014';
 
     // current streak: most recent game across all seasons combined
@@ -374,7 +378,11 @@
   function renderSchedule(team){
     var years = Object.keys(team.seasons).sort(function(a,b){ return b-a; });
     if (!years.length) return '';
-    var options = years.map(function(y,i){ return '<option value="' + y + '"' + (i===0?' selected':'') + '>' + y + '</option>'; }).join('');
+    // Default to the most recent year with real games on file — a future
+    // season row (e.g. 2027) added ahead of time with no games yet
+    // shouldn't be what people land on by default.
+    var defaultYear = years.find(function(y){ return team.seasons[y].games.length > 0; }) || years[0];
+    var options = years.map(function(y){ return '<option value="' + y + '"' + (y===defaultYear?' selected':'') + '>' + y + '</option>'; }).join('');
     return '<section id="schedule"><div class="section-head"><h2 class="display">Season by season</h2></div>' +
       '<div style="margin-bottom:20px;"><select class="unit-select" id="season-select">' + options + '</select></div>' +
       '<div class="season-panel"><div class="yr-big display" id="season-yr"></div>' +

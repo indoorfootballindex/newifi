@@ -262,7 +262,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     <a href="leagues.html">Leagues</a>
     <a href="teams.html">Teams</a>
     <a href="players.html">Players</a>
-    <a href="#schedule">Schedule</a>
+    <a href="schedule.html">Schedule</a>
     <a href="#news">News</a>
   </nav>
 </div>

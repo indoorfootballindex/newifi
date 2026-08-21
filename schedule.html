@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule — Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--arena-black); color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto; padding:22px 24px 0;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:28px; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  main{max-width:1200px; margin:0 auto; padding:0 24px 60px;}
+
+  .hero{padding:44px 0 26px;}
+  .hero h1{font-size:clamp(34px,5vw,48px); margin:0 0 8px; color:var(--chalk);}
+  .hero p{font-size:14px; color:var(--steel); margin:0;}
+
+  .filters{
+    background:var(--card); border:1px solid var(--card-line); border-radius:12px;
+    padding:20px 22px; margin-bottom:22px;
+    display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr 1fr auto auto; gap:14px; align-items:end;
+  }
+  .filters label{display:block; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin-bottom:6px;}
+  .filters input[type=text]{
+    width:100%; background:var(--arena-black-2); border:1px solid var(--card-line); border-radius:8px;
+    color:var(--chalk); padding:10px 12px; font-size:14px; font-family:'Inter',sans-serif;
+  }
+  .filters input[type=text]:focus{outline:1px solid var(--crimson); border-color:var(--crimson);}
+  select.unit-select{
+    width:100%; appearance:none; -webkit-appearance:none; background:var(--arena-black-2); color:var(--chalk);
+    border:1px solid var(--card-line); border-radius:8px; padding:10px 32px 10px 12px;
+    font-family:'Inter',sans-serif; font-size:14px; cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%2382868c'/></svg>");
+    background-repeat:no-repeat; background-position:right 12px center;
+  }
+  .btn{
+    padding:10px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none;
+    font-family:'Inter',sans-serif; white-space:nowrap;
+  }
+  .btn-primary{background:var(--crimson); color:var(--chalk);}
+  .btn-primary:hover{background:#b81f31;}
+  .btn-ghost{background:var(--arena-black-2); color:var(--chalk-dim); border:1px solid var(--card-line);}
+  .btn-ghost:hover{color:var(--chalk); border-color:var(--steel);}
+  @media (max-width:1000px){.filters{grid-template-columns:1fr 1fr; }}
+  @media (max-width:600px){.filters{grid-template-columns:1fr;}}
+
+  .result-count{font-size:13px; color:var(--steel); margin-bottom:16px;}
+
+  .game-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:1000px){.game-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:640px){.game-grid{grid-template-columns:1fr;}}
+
+  .game-card{background:var(--card); border:1px solid var(--card-line); border-radius:12px; padding:16px;}
+  .game-card.playoff{border-color:rgba(232,163,61,0.35);}
+  .game-card-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .game-card-head .date{font-size:12px; color:var(--chalk-dim);}
+  .game-card-head .league{font-size:11px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .game-status{text-align:center; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); margin-bottom:10px;}
+  .game-status.live-time{color:var(--turf);}
+  .matchup{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;}
+  .team-block{flex:1; text-align:center; min-width:0;}
+  .team-block .logo{width:44px; height:44px; margin:0 auto 8px; border-radius:8px; background:var(--arena-black-2); display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .team-block .logo img{width:100%; height:100%; object-fit:contain; padding:5px;}
+  .team-block .name{font-size:12px; color:var(--chalk); font-weight:600; line-height:1.3;}
+  .team-block .score{font-size:22px; color:var(--amber); font-family:'IBM Plex Mono',monospace; margin-top:6px;}
+  .team-block.winner .name{color:var(--chalk);}
+  .team-block.loser .score{color:var(--steel);}
+  .vs-sep{font-size:11px; color:var(--steel); flex-shrink:0;}
+  .game-card-foot{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .watch-btn{
+    font-size:11px; padding:6px 12px; border-radius:6px; background:var(--arena-black-2); color:var(--chalk-dim);
+    border:1px solid var(--card-line); font-weight:600;
+  }
+  .watch-btn:hover{color:var(--chalk); border-color:var(--steel);}
+  .week-label{font-size:11px; color:var(--steel); margin-left:auto;}
+
+  .pagination{display:flex; justify-content:center; align-items:center; gap:14px; margin-top:28px; font-size:13px;}
+  .pagination button{
+    background:var(--card); border:1px solid var(--card-line); color:var(--chalk); border-radius:8px;
+    padding:8px 16px; font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .pagination button:disabled{opacity:0.35; cursor:default;}
+  .pagination button:not(:disabled):hover{border-color:var(--crimson);}
+  .pagination .page-info{color:var(--steel);}
+
+  .empty{padding:60px 24px; text-align:center; color:var(--steel);}
+
+  footer{max-width:1200px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);}
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a> / Schedule</div>
+  <nav>
+    <a href="leagues.html">Leagues</a>
+    <a href="teams.html">Teams</a>
+    <a href="players.html">Players</a>
+    <a href="schedule.html">Schedule</a>
+    <a href="index.html#news">News</a>
+  </nav>
+</div>
+
+<main>
+  <div class="hero">
+    <h1 class="display">Schedule</h1>
+    <p>Browse upcoming and past games across every league. Logos come from your Teams data.</p>
+  </div>
+
+  <div class="filters">
+    <div>
+      <label>Team search</label>
+      <input type="text" id="f-team" placeholder="Search team name (home or away)…">
+    </div>
+    <div>
+      <label>League</label>
+      <select class="unit-select" id="f-league"><option value="">All leagues</option></select>
+    </div>
+    <div>
+      <label>Year</label>
+      <select class="unit-select" id="f-year"><option value="">All years</option></select>
+    </div>
+    <div>
+      <label>Week</label>
+      <select class="unit-select" id="f-week"><option value="">All weeks</option></select>
+    </div>
+    <div>
+      <label>Show</label>
+      <select class="unit-select" id="f-show">
+        <option value="upcoming">Upcoming</option>
+        <option value="past">Past</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost" id="btn-reset">Reset</button>
+    <button class="btn btn-primary" id="btn-apply">Apply</button>
+  </div>
+
+  <div class="result-count" id="result-count">Loading&hellip;</div>
+  <div class="game-grid" id="game-grid"></div>
+  <div class="empty" id="empty-state" style="display:none;">No games match those filters.</div>
+  <div class="pagination" id="pagination" style="display:none;">
+    <button id="btn-prev">&larr; Previous</button>
+    <span class="page-info mono" id="page-info"></span>
+    <button id="btn-next">Next &rarr;</button>
+  </div>
+</main>
+
+<footer>
+  <span>Indoor Football Index &middot; Schedule data compiled from league box scores.</span>
+  <span id="footer-count"></span>
+</footer>
+
+<script>
+  var ALL_GAMES = [];
+  var LOGO_MAP = {};
+  var PAGE_SIZE = 100;
+  var currentPage = 1;
+  var filtered = [];
+
+  function esc(s){
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function logoFor(name){
+    return LOGO_MAP[name] || null;
+  }
+
+  function teamBlock(name, score, otherScore, played){
+    var logo = logoFor(name);
+    var logoHtml = logo
+      ? '<img src="' + esc(logo) + '" alt="' + esc(name) + ' logo" onerror="this.style.display=\'none\'">'
+      : '';
+    var cls = 'team-block';
+    if (played && score != null && otherScore != null){
+      cls += (score > otherScore) ? ' winner' : ' loser';
+    }
+    var scoreHtml = played && score != null ? '<div class="score">' + score + '</div>' : '';
+    return '<div class="' + cls + '"><div class="logo">' + logoHtml + '</div><div class="name">' + esc(name) + '</div>' + scoreHtml + '</div>';
+  }
+
+  function fmtDate(iso){
+    var parts = iso.split('-');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[parseInt(parts[1],10)-1] + ' ' + parseInt(parts[2],10) + ', ' + parts[0];
+  }
+
+  function cardHtml(g){
+    var cardCls = 'game-card' + (g.po ? ' playoff' : '');
+    var statusHtml = g.p
+      ? '<div class="game-status">Final</div>'
+      : '<div class="game-status live-time">' + esc(g.tm || 'Time TBD') + '</div>';
+    var watchHtml = g.w ? '<a class="watch-btn" href="' + esc(g.w) + '" target="_blank" rel="noopener">Watch</a>' : '<span></span>';
+    var weekLabel = g.ch ? 'Championship' : (g.wk || '');
+    return '<div class="' + cardCls + '">' +
+      '<div class="game-card-head"><span class="date">' + esc(fmtDate(g.d)) + (g.dow ? ' &middot; ' + esc(g.dow) : '') + '</span><span class="league">' + esc(g.lg||'') + '</span></div>' +
+      statusHtml +
+      '<div class="matchup">' + teamBlock(g.a, g.as, g.hs, g.p) + '<span class="vs-sep">@</span>' + teamBlock(g.h, g.hs, g.as, g.p) + '</div>' +
+      '<div class="game-card-foot">' + watchHtml + '<span class="week-label">' + esc(weekLabel) + '</span></div>' +
+    '</div>';
+  }
+
+  function applyFilters(){
+    var team = document.getElementById('f-team').value.trim().toLowerCase();
+    var league = document.getElementById('f-league').value;
+    var year = document.getElementById('f-year').value;
+    var week = document.getElementById('f-week').value;
+    var show = document.getElementById('f-show').value;
+    var today = todayStr();
+
+    filtered = ALL_GAMES.filter(function(g){
+      if (team && g.h.toLowerCase().indexOf(team) === -1 && g.a.toLowerCase().indexOf(team) === -1) return false;
+      if (league && g.lg !== league) return false;
+      if (year && g.d.slice(0,4) !== year) return false;
+      if (week && g.wk !== week) return false;
+      if (show === 'upcoming' && (g.p || g.d < today)) return false;
+      if (show === 'past' && !g.p) return false;
+      return true;
+    });
+
+    // upcoming games read best soonest-first; past/all read best newest-first
+    filtered.sort(function(x,y){
+      return show === 'upcoming' ? x.d.localeCompare(y.d) : y.d.localeCompare(x.d);
+    });
+
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage(){
+    var grid = document.getElementById('game-grid');
+    var countEl = document.getElementById('result-count');
+    var emptyEl = document.getElementById('empty-state');
+    var pagEl = document.getElementById('pagination');
+
+    if (!filtered.length){
+      countEl.textContent = '0 games found.';
+      grid.innerHTML = '';
+      grid.style.display = 'none';
+      emptyEl.style.display = 'block';
+      pagEl.style.display = 'none';
+      return;
+    }
+
+    var totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    var start = (currentPage - 1) * PAGE_SIZE;
+    var pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+    countEl.textContent = filtered.length.toLocaleString() + ' games found. Showing ' + (start+1) + '-' + (start+pageItems.length) + '.';
+    grid.style.display = 'grid';
+    emptyEl.style.display = 'none';
+    grid.innerHTML = pageItems.map(cardHtml).join('');
+
+    pagEl.style.display = totalPages > 1 ? 'flex' : 'none';
+    document.getElementById('page-info').textContent = 'Page ' + currentPage + ' of ' + totalPages;
+    document.getElementById('btn-prev').disabled = currentPage <= 1;
+    document.getElementById('btn-next').disabled = currentPage >= totalPages;
+  }
+
+  function populateDropdown(id, values){
+    var sel = document.getElementById(id);
+    values.forEach(function(v){
+      var opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
+    });
+  }
+
+  Promise.all([
+    fetch('schedule.json').then(function(r){ return r.json(); }),
+    fetch('teams.json').then(function(r){ return r.json(); }).catch(function(){ return []; })
+  ]).then(function(results){
+    ALL_GAMES = results[0];
+    var teams = results[1];
+    teams.forEach(function(t){
+      if (t.logos && t.logos.length && t.logos[0].url){
+        LOGO_MAP[t.name] = t.logos[0].url;
+      }
+    });
+
+    var leagues = [], years = [], weeks = [];
+    ALL_GAMES.forEach(function(g){
+      if (g.lg && leagues.indexOf(g.lg) === -1) leagues.push(g.lg);
+      var y = g.d.slice(0,4);
+      if (years.indexOf(y) === -1) years.push(y);
+      if (g.wk && weeks.indexOf(g.wk) === -1) weeks.push(g.wk);
+    });
+    leagues.sort();
+    years.sort().reverse();
+    weeks.sort();
+
+    populateDropdown('f-league', leagues);
+    populateDropdown('f-year', years);
+    populateDropdown('f-week', weeks);
+
+    document.getElementById('footer-count').textContent = ALL_GAMES.length.toLocaleString() + ' games on file';
+
+    document.getElementById('btn-apply').addEventListener('click', applyFilters);
+    document.getElementById('f-team').addEventListener('keydown', function(e){ if (e.key === 'Enter') applyFilters(); });
+    document.getElementById('btn-reset').addEventListener('click', function(){
+      document.getElementById('f-team').value = '';
+      document.getElementById('f-league').value = '';
+      document.getElementById('f-year').value = '';
+      document.getElementById('f-week').value = '';
+      document.getElementById('f-show').value = 'upcoming';
+      applyFilters();
+    });
+    document.getElementById('btn-prev').addEventListener('click', function(){ if (currentPage>1){ currentPage--; renderPage(); window.scrollTo(0,0); } });
+    document.getElementById('btn-next').addEventListener('click', function(){ currentPage++; renderPage(); window.scrollTo(0,0); });
+
+    applyFilters(); // defaults to Show=Upcoming on first load
+  }).catch(function(err){
+    document.getElementById('result-count').textContent = '';
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('empty-state').textContent = "Couldn't load schedule data: " + err;
+  });
+</script>
+
+</body>
+</html>
