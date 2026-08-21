@@ -13,6 +13,7 @@ Usage:
 """
 
 import sys
+import re
 import json
 import openpyxl
 
@@ -20,6 +21,14 @@ import openpyxl
 def fmt_num(v):
     if v is None:
         return None
+    if isinstance(v, str):
+        s = v.strip()
+        if re.fullmatch(r"-?\d+", s):
+            return int(s)
+        if re.fullmatch(r"-?\d+\.\d+", s):
+            v = float(s)
+        else:
+            return None  # not actually numeric — treat like a missing score
     if isinstance(v, float) and v == int(v):
         v = int(v)
     return v
@@ -45,9 +54,16 @@ def main():
         if not date or not home or not away:
             continue
 
-        home_score = r[idx["Home Score"]] if "Home Score" in idx else None
-        away_score = r[idx["Away Score"]] if "Away Score" in idx else None
-        played = home_score is not None and away_score is not None
+        home_score_raw = r[idx["Home Score"]] if "Home Score" in idx else None
+        away_score_raw = r[idx["Away Score"]] if "Away Score" in idx else None
+        # A game is "played" if the source has ANY result recorded, even if
+        # it's just text (W/L/T) instead of a real number — some older
+        # games (mostly LFL-era) only ever had the outcome recorded, not
+        # the final score. Those still happened; they just can't be shown
+        # with a numeric score or counted in the Scorigami grid.
+        played = home_score_raw is not None and away_score_raw is not None
+        home_score = fmt_num(home_score_raw)
+        away_score = fmt_num(away_score_raw)
 
         week = r[idx["Week"]] if "Week" in idx else None
         week_low = str(week).lower()
@@ -59,8 +75,8 @@ def main():
             "dow": r[idx["Day of the Week"]] if "Day of the Week" in idx else None,
             "h": home,
             "a": away,
-            "hs": fmt_num(home_score),
-            "as": fmt_num(away_score),
+            "hs": home_score,
+            "as": away_score,
             "lg": r[idx["League"]] if "League" in idx else None,
             "wk": week,
             "tm": r[idx["Time (CST)"]] if "Time (CST)" in idx else None,

@@ -150,9 +150,11 @@ def load_schedule_by_team(wb, team_names):
         # the game from both teams' pages.
         cur_home = cur_home or home_team
         cur_away = cur_away or away_team
-        home_score = r[idx["Home Score"]]
-        away_score = r[idx["Away Score"]]
-        if home_score is None or away_score is None:
+        home_score, home_outcome = parse_score_or_outcome(r[idx["Home Score"]])
+        away_score, away_outcome = parse_score_or_outcome(r[idx["Away Score"]])
+        if home_score is None and home_outcome is None:
+            continue
+        if away_score is None and away_outcome is None:
             continue
         week = r[idx["Week"]] if "Week" in idx else None
         week_low = str(week).lower()
@@ -164,17 +166,28 @@ def load_schedule_by_team(wb, team_names):
             if team_name not in team_names:
                 continue
             opp = away_team if is_home else home_team
-            own_score = home_score if is_home else away_score
-            opp_score = away_score if is_home else home_score
             tie_col = idx.get("Tie")
-            tie = (tie_col is not None and r[tie_col] == "Y")
-            wl = "T" if tie else ("W" if own_score > opp_score else "L")
+            tie_flag = (tie_col is not None and r[tie_col] == "Y")
+
+            if home_score is not None and away_score is not None:
+                own_score = home_score if is_home else away_score
+                opp_score = away_score if is_home else home_score
+                wl = "T" if tie_flag or own_score == opp_score else ("W" if own_score > opp_score else "L")
+                score_str = f"{fmt_score(own_score)}-{fmt_score(opp_score)}"
+            else:
+                # outcome-only row (no real score on file) — use the
+                # recorded W/L/T text directly rather than guessing
+                own_outcome = home_outcome if is_home else away_outcome
+                opp_outcome = away_outcome if is_home else home_outcome
+                wl = own_outcome or ("T" if tie_flag else ("W" if opp_outcome == "L" else "L"))
+                score_str = "\u2014"
+
             games_by_team[team_name].append({
                 "date": date,
                 "dateLabel": date.strftime("%b %d"),
                 "opp": opp,
                 "home": is_home,
-                "score": f"{fmt_score(own_score)}-{fmt_score(opp_score)}",
+                "score": score_str,
                 "wl": wl,
                 "playoff": is_playoff,
                 "championship": is_championship,
@@ -183,6 +196,27 @@ def load_schedule_by_team(wb, team_names):
     for t in games_by_team:
         games_by_team[t].sort(key=lambda g: g["date"])
     return games_by_team
+
+
+def parse_score_or_outcome(v):
+    """Most Home/Away Score cells are real numbers. A small number of older
+    rows (mostly LFL-era games) only ever recorded the outcome as literal
+    'W'/'L'/'T' text instead of a real score. Returns (number_or_None,
+    outcome_letter_or_None) so callers can use whichever is available."""
+    if v is None:
+        return None, None
+    if isinstance(v, str):
+        s = v.strip().upper()
+        if s in ("W", "L", "T"):
+            return None, s
+        try:
+            n = float(s) if "." in s else int(s)
+            return n, None
+        except ValueError:
+            return None, None
+    if isinstance(v, float) and v == int(v):
+        v = int(v)
+    return v, None
 
 
 def fmt_score(v):

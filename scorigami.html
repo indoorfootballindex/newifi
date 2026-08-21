@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scorigami — Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--arena-black); color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:1160px; margin:0 auto; padding:22px 24px 0;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:24px; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  main{max-width:1160px; margin:0 auto; padding:0 24px 60px;}
+
+  .hero{text-align:center; padding:44px 0 26px;}
+  .hero h1{font-size:clamp(34px,5.5vw,52px); margin:0 0 8px; color:var(--chalk);}
+  .hero p{font-size:14px; color:var(--steel); margin:0;}
+
+  .stats-bar{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;}
+  @media (max-width:700px){.stats-bar{grid-template-columns:repeat(2,1fr);}}
+  .stat-pill{background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:14px 16px;}
+  .stat-pill .v{font-size:20px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .stat-pill .k{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin-top:4px;}
+  .stat-pill .detail{font-size:11px; color:var(--chalk-dim); margin-top:4px; line-height:1.4;}
+
+  .controls-bar{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:18px;}
+  .ctrl-group{
+    display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--card-line);
+    border-radius:8px; padding:8px 14px; font-size:12px; font-weight:600; color:var(--chalk-dim);
+  }
+  .switch{position:relative; display:inline-block; width:32px; height:18px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .switchSlider{position:absolute; cursor:pointer; inset:0; background:var(--steel-line); border-radius:999px; transition:.2s;}
+  .switchSlider::before{content:""; position:absolute; height:13px; width:13px; left:2px; bottom:2.5px; background:var(--chalk); border-radius:50%; transition:.2s;}
+  .switch input:checked + .switchSlider{background:var(--crimson);}
+  .switch input:checked + .switchSlider::before{transform:translateX(14px);}
+  select.unit-select{
+    appearance:none; -webkit-appearance:none; background:var(--arena-black-2); color:var(--chalk);
+    border:1px solid var(--card-line); border-radius:8px; padding:8px 30px 8px 12px;
+    font-family:'Inter',sans-serif; font-size:13px; cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%2382868c'/></svg>");
+    background-repeat:no-repeat; background-position:right 10px center;
+  }
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; align-items:center; font-size:11px; color:var(--steel); margin-bottom:16px;}
+  .leg-swatch{display:inline-block; width:11px; height:11px; border-radius:2px; vertical-align:middle; margin-right:4px;}
+
+  #tableWrap{border:1px solid var(--card-line); border-radius:12px; margin-bottom:40px; padding:16px; overflow-x:auto; -webkit-overflow-scrolling:touch; background:var(--card);}
+  #loadingDiv{padding:60px; text-align:center; color:var(--steel); font-size:14px;}
+
+  #scoreTable{border-collapse:collapse; font-size:0;}
+  #scoreTable th{
+    background:var(--arena-black-2); color:var(--chalk-dim);
+    width:9px; height:9px; min-width:9px; max-width:9px; padding:0; margin:0; box-sizing:border-box;
+    font-size:0.5rem; line-height:9px; font-weight:700; text-align:center; overflow:hidden; white-space:nowrap;
+  }
+  #scoreTable td.cell{
+    width:9px; height:9px; min-width:9px; max-width:9px; padding:0; margin:0; box-sizing:border-box;
+    border:1px solid rgba(255,255,255,.04); cursor:pointer; overflow:hidden; transition:filter .1s; font-size:0; line-height:9px;
+  }
+  #scoreTable td.cell:hover{filter:brightness(1.3); outline:1px solid var(--crimson); position:relative; z-index:3;}
+  #scoreTable td.rowHead{
+    background:var(--arena-black-2); color:var(--chalk-dim); font-size:0.55rem; font-weight:700; line-height:1;
+    padding:0 4px; white-space:nowrap; text-align:left; position:sticky; left:0; z-index:2;
+  }
+
+  td.impossible{background:#08090a !important; cursor:default;}
+  td.impossible:hover{filter:none !important; outline:none !important;}
+  td.unused{background:var(--arena-black-2);}
+  td.shade-1{background:#3a2f18;}
+  td.shade-2{background:#5c4a1e;}
+  td.shade-3{background:#8a6e22;}
+  td.shade-4{background:#b8891f;}
+  td.shade-5{background:var(--amber);}
+  td.shade-6{background:#f0b95c;}
+  td.shade-7{background:#f8d38a;}
+  td.used{background:var(--amber);}
+
+  #infoBox{
+    display:none; position:fixed; z-index:200; background:var(--card); border:1px solid var(--card-line);
+    border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.5); padding:14px 16px; max-width:300px;
+    font-size:13px; color:var(--chalk-dim);
+  }
+  #infoBox h4{margin:0 0 6px; font-size:16px; color:var(--chalk); font-family:'IBM Plex Mono',monospace;}
+  #infoBox .ib-count{font-weight:700; color:var(--amber);}
+  #infoBox .ib-game{border-top:1px solid var(--steel-line); margin-top:6px; padding-top:6px;}
+  #infoBox .ib-game b{color:var(--chalk);}
+  #infoBox .ib-label{font-size:10px; font-weight:700; color:var(--steel); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px;}
+
+  #faqSection{max-width:700px; margin:0 auto 50px;}
+  #faqSection h2{font-size:20px; margin-bottom:16px; color:var(--chalk);}
+  .qna{margin-bottom:18px;}
+  .qna h3{font-size:14px; margin:0 0 4px; color:var(--chalk);}
+  .qna p{margin:0; font-size:13px; color:var(--steel); line-height:1.6;}
+
+  footer{max-width:1160px; margin:0 auto; padding:0 24px 60px; font-size:12px; color:var(--steel);}
+  footer a{color:var(--chalk-dim);}
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a> / Scorigami</div>
+  <nav>
+    <a href="leagues.html">Leagues</a>
+    <a href="teams.html">Teams</a>
+    <a href="players.html">Players</a>
+    <a href="schedule.html">Schedule</a>
+    <a href="scorigami.html">Scorigami</a>
+    <a href="index.html#news">News</a>
+  </nav>
+</div>
+
+<main>
+  <div class="hero">
+    <h1 class="display">Scorigami</h1>
+    <p>Every final score combination that's ever happened in indoor and arena football.</p>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-pill"><div class="v mono" id="statTotal">&hellip;</div><div class="k">Games tracked</div></div>
+    <div class="stat-pill"><div class="v mono" id="statUnique">&hellip;</div><div class="k">Unique scorelines</div></div>
+    <div class="stat-pill"><div class="v mono" id="statMax">&hellip;</div><div class="k">Most common score</div></div>
+    <div class="stat-pill"><div class="v mono" id="statRecentScorigami">&hellip;</div><div class="k">Latest scorigami</div><div class="detail" id="statRecentScorigamiDetail"></div></div>
+  </div>
+
+  <div class="controls-bar">
+    <label class="ctrl-group"><label class="switch"><input type="checkbox" id="cbGradient" checked><span class="switchSlider"></span></label>Show Gradient</label>
+    <label class="ctrl-group"><label class="switch"><input type="checkbox" id="cbCount"><span class="switchSlider"></span></label>Show Count</label>
+    <div class="ctrl-group"><label for="leagueFilter" style="font-weight:700;">League:</label>
+      <select class="unit-select" id="leagueFilter"><option value="ALL">All Leagues</option></select>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="leg-swatch" style="background:#08090a;"></span>Impossible</span>
+    <span><span class="leg-swatch" style="background:var(--arena-black-2); border:1px solid var(--card-line);"></span>Never happened</span>
+    <span><span class="leg-swatch" style="background:#3a2f18;"></span>1&times;</span>
+    <span><span class="leg-swatch" style="background:#8a6e22;"></span>Few times</span>
+    <span><span class="leg-swatch" style="background:var(--amber);"></span>Common</span>
+    <span><span class="leg-swatch" style="background:#f8d38a;"></span>Very common</span>
+  </div>
+
+  <div id="tableWrap">
+    <div id="loadingDiv">Loading score data&hellip;</div>
+    <table id="scoreTable" style="display:none;"></table>
+  </div>
+
+  <div id="infoBox"></div>
+
+  <section id="faqSection">
+    <h2 class="display">FAQ</h2>
+    <div class="qna">
+      <h3>What is Scorigami?</h3>
+      <p>Scorigami is a concept created by Jon Bois. It tracks every unique final score combination that has ever occurred. Because of the unusual scoring structure of indoor football &mdash; where high-scoring games are common &mdash; there are hundreds of theoretically possible scorelines that have never actually happened.</p>
+    </div>
+    <div class="qna">
+      <h3>How do I read the chart?</h3>
+      <p>The winning score runs along the top (horizontal axis) and the losing score runs down the left side (vertical axis). Amber cells have happened &mdash; brighter means more occurrences. Dark cells have never happened. Black cells are impossible (the loser can't outscore the winner). Click any cell to see the games for that score.</p>
+    </div>
+    <div class="qna">
+      <h3>Where does the data come from?</h3>
+      <p>Scores are compiled from dozens of indoor and arena football leagues spanning 1987 to the present, pulled from the same schedule archive used across the rest of the site.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Data compiled for the Indoor Football Index &middot; Scorigami concept by <a href="https://twitter.com/jon_bois" target="_blank" rel="noopener">Jon Bois</a>
+</footer>
+
+<script>
+  let ALL_GAMES = [];
+  let scoreMap = {};
+  let showGradient = true;
+  let showCount = false;
+
+  function esc(s){
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  function initData(games){
+    ALL_GAMES = games.filter(function(g){ return g.p && g.hs != null && g.as != null; });
+    var leagues = new Set();
+    ALL_GAMES.forEach(function(g){ leagues.add(g.lg || 'Unknown'); });
+    var sel = document.getElementById('leagueFilter');
+    Array.from(leagues).sort().forEach(function(lg){
+      var opt = document.createElement('option');
+      opt.value = lg; opt.textContent = lg;
+      sel.appendChild(opt);
+    });
+  }
+
+  function buildScoreMap(league){
+    scoreMap = {};
+    ALL_GAMES.forEach(function(g){
+      if (league !== 'ALL' && g.lg !== league) return;
+      var h = g.hs, a = g.as;
+      var w = Math.max(h, a), l = Math.min(h, a);
+      var key = w + '-' + l;
+      if (!scoreMap[key]) scoreMap[key] = [];
+      scoreMap[key].push(g);
+    });
+  }
+
+  function getShadeClass(count){
+    if (!showGradient) return 'used';
+    if (count === 1) return 'shade-1';
+    if (count <= 3) return 'shade-2';
+    if (count <= 7) return 'shade-3';
+    if (count <= 15) return 'shade-4';
+    if (count <= 30) return 'shade-5';
+    if (count <= 60) return 'shade-6';
+    return 'shade-7';
+  }
+
+  function buildTable(league){
+    buildScoreMap(league);
+
+    var maxWin = 0;
+    Object.keys(scoreMap).forEach(function(k){
+      var w = parseInt(k.split('-')[0], 10);
+      if (w > maxWin) maxWin = w;
+    });
+    if (league === 'ALL'){
+      ALL_GAMES.forEach(function(g){
+        if (g.hs > maxWin) maxWin = g.hs;
+        if (g.as > maxWin) maxWin = g.as;
+      });
+    }
+    maxWin = Math.min(maxWin, 140);
+
+    var maxLoss = 0;
+    Object.keys(scoreMap).forEach(function(k){
+      var l = parseInt(k.split('-')[1], 10);
+      if (l > maxLoss) maxLoss = l;
+    });
+    maxLoss = Math.min(maxLoss, 95);
+
+    var table = document.getElementById('scoreTable');
+    table.innerHTML = '';
+
+    var thead = document.createElement('thead');
+    var hrow = document.createElement('tr');
+    for (var w = 0; w <= maxWin; w++){
+      var th = document.createElement('th');
+      th.textContent = w;
+      hrow.appendChild(th);
+    }
+    var thCorner = document.createElement('th');
+    thCorner.textContent = 'L\u2193';
+    thCorner.style.cssText = 'position:sticky;left:0;z-index:3;background:var(--arena-black-2);width:auto;max-width:none;padding:0 4px;font-size:0.55rem;';
+    hrow.insertBefore(thCorner, hrow.firstChild);
+    thead.appendChild(hrow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    var totalUnique=0, totalGames=0, maxCount=0, maxLabel='';
+
+    for (var l = 0; l <= maxLoss; l++){
+      var tr = document.createElement('tr');
+      for (var w2 = 0; w2 <= maxWin; w2++){
+        var td = document.createElement('td');
+        td.className = 'cell';
+
+        if (w2 < l){
+          td.classList.add('impossible');
+          tr.appendChild(td);
+          continue;
+        }
+
+        var key = w2 + '-' + l;
+        var games = scoreMap[key] || [];
+        var cnt = games.length;
+
+        if (cnt > 0){
+          totalUnique++; totalGames += cnt;
+          td.classList.add(getShadeClass(cnt));
+          if (cnt > maxCount){ maxCount = cnt; maxLabel = w2 + '\u2013' + l; }
+          if (showCount){
+            td.textContent = cnt;
+            td.style.fontSize = '0.45rem';
+            td.style.color = 'rgba(0,0,0,0.85)';
+          }
+          td.title = w2 + '\u2013' + l + ': ' + cnt + ' game' + (cnt===1?'':'s');
+        } else {
+          td.classList.add('unused');
+        }
+
+        td.dataset.w = w2;
+        td.dataset.l = l;
+        td.addEventListener('click', onCellClick);
+        tr.appendChild(td);
+      }
+      var tdLabel = document.createElement('td');
+      tdLabel.className = 'rowHead';
+      tdLabel.textContent = l;
+      tr.insertBefore(tdLabel, tr.firstChild);
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+
+    document.getElementById('statTotal').textContent = totalGames.toLocaleString();
+    document.getElementById('statUnique').textContent = totalUnique.toLocaleString();
+    document.getElementById('statMax').textContent = maxLabel ? maxLabel + ' (' + maxCount + '\u00d7)' : '\u2014';
+
+    var recentGame = null, recentKey = null, recentDate = null;
+    Object.entries(scoreMap).forEach(function(entry){
+      var key = entry[0], games = entry[1];
+      if (games.length !== 1) return;
+      var g = games[0];
+      var d = new Date(g.d);
+      if (!recentDate || d > recentDate){ recentDate = d; recentGame = g; recentKey = key; }
+    });
+    if (recentGame){
+      var h = recentGame.hs, a = recentGame.as;
+      var tied = h === a;
+      var winner = h >= a ? recentGame.h : recentGame.a;
+      var loser = h >= a ? recentGame.a : recentGame.h;
+      var verb = tied ? 'tied' : 'def.';
+      document.getElementById('statRecentScorigami').textContent = recentKey;
+      document.getElementById('statRecentScorigamiDetail').innerHTML = '<b>' + esc(winner) + '</b> ' + verb + ' ' + esc(loser) + '<br>' + esc(recentGame.d);
+    } else {
+      document.getElementById('statRecentScorigami').textContent = '\u2014';
+    }
+
+    table.style.display = '';
+    document.getElementById('loadingDiv').style.display = 'none';
+  }
+
+  var infoBox = document.getElementById('infoBox');
+
+  function onCellClick(e){
+    var td = e.currentTarget;
+    if (td.classList.contains('impossible')) return;
+    var w = parseInt(td.dataset.w, 10);
+    var l = parseInt(td.dataset.l, 10);
+    var key = w + '-' + l;
+    var games = scoreMap[key] || [];
+
+    if (games.length === 0){
+      infoBox.innerHTML = '<h4>' + w + '\u2013' + l + '</h4><p style="color:var(--steel);">Never happened.</p>';
+    } else {
+      var sorted = games.slice().sort(function(a,b){ return new Date(a.d) - new Date(b.d); });
+      var first = sorted[0], last = sorted[sorted.length-1];
+      function fmt(g){
+        var h = g.hs, a = g.as;
+        var tied = h === a;
+        var winner = h >= a ? g.h : g.a;
+        var loser = h >= a ? g.a : g.h;
+        var result = tied ? '<b>' + esc(winner) + '</b> tied ' + esc(loser) : '<b>' + esc(winner) + '</b> def. ' + esc(loser);
+        return result + '<br><small>' + esc(g.d) + ' \u00b7 ' + esc(g.lg||'') + (g.wk ? ' \u00b7 ' + esc(g.wk) : '') + '</small>';
+      }
+      var html = '<h4>' + w + '\u2013' + l + '</h4>';
+      html += '<div class="ib-count">' + games.length + ' game' + (games.length===1?'':'s') + '</div>';
+      html += '<div class="ib-game"><div class="ib-label">First</div>' + fmt(first) + '</div>';
+      if (games.length > 1){
+        html += '<div class="ib-game"><div class="ib-label">Most Recent</div>' + fmt(last) + '</div>';
+      }
+      infoBox.innerHTML = html;
+    }
+
+    var bw = 300, bh = 220;
+    var x = e.clientX + 12, y = e.clientY + 12;
+    if (x + bw > window.innerWidth) x = e.clientX - bw - 8;
+    if (y + bh > window.innerHeight) y = e.clientY - bh - 8;
+    infoBox.style.left = x + 'px';
+    infoBox.style.top = y + 'px';
+    infoBox.style.display = 'block';
+    e.stopPropagation();
+  }
+
+  document.addEventListener('click', function(){ infoBox.style.display = 'none'; });
+
+  document.getElementById('cbGradient').addEventListener('change', function(e){
+    showGradient = e.target.checked;
+    buildTable(document.getElementById('leagueFilter').value);
+  });
+  document.getElementById('cbCount').addEventListener('change', function(e){
+    showCount = e.target.checked;
+    buildTable(document.getElementById('leagueFilter').value);
+  });
+  document.getElementById('leagueFilter').addEventListener('change', function(e){
+    buildTable(e.target.value);
+  });
+
+  fetch('schedule.json')
+    .then(function(r){ return r.json(); })
+    .then(function(games){
+      initData(games);
+      buildTable('ALL');
+    })
+    .catch(function(err){
+      document.getElementById('loadingDiv').textContent = "Couldn't load schedule.json: " + err;
+    });
+</script>
+
+</body>
+</html>
