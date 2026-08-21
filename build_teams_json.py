@@ -251,12 +251,15 @@ def season_summary(games):
 
 
 def load_sbs_teams(wb):
-    """Reads the 'SBS Teams' tab (Team, League, Year, Reg Wins, Reg Loss,
-    Ties, Playoff W, Playoff L, W-L-T, PO W-L, Conference, Division, Result,
-    Current Name, Logo) if present. Matched on Current Name + Year so a
-    franchise's season history follows it across any past rebrands, same as
-    everywhere else. Returns {(current_name, year_str): {...}}, or {} if the
-    tab doesn't exist yet."""
+    """Reads the 'SBS Teams' tab (Team Name, League, Year, Reg Wins, Reg Loss,
+    Ties, Playoff W, Playoff Loss, W-L-T, PO W-L, Conference, Division,
+    Result, Current Name, Logo) if present. Matched on Current Name + Year
+    so a franchise's season history follows it across any past rebrands,
+    same as everywhere else. 'Team Name' and 'Logo' capture that season's
+    actual identity (which can differ from the current one after a
+    rebrand); both fall back to the current name/logo when left blank.
+    Returns {(current_name, year_str): {...}}, or {} if the tab doesn't
+    exist yet."""
     if "SBS Teams" not in wb.sheetnames:
         return {}
     ws = wb["SBS Teams"]
@@ -297,7 +300,10 @@ def load_sbs_teams(wb):
         if logo and str(logo).strip().lower() in ("no match", "n/a", "none", "-"):
             logo = None
 
+        season_name = esc_none(get(r, "Team Name"))
+
         out[(current_name, year)] = {
+            "name": season_name,
             "league": esc_none(get(r, "League")),
             "reg": reg,
             "post": post,
@@ -374,6 +380,8 @@ def main():
                 existing["result"] = row["result"]
                 if row["logo"]:
                     existing["logo"] = row["logo"]
+                if row["name"]:
+                    existing["name"] = row["name"]
                 team["seasons"][year] = existing
         print(f"Applied {sbs_overrides} season records from 'SBS Teams' tab")
 

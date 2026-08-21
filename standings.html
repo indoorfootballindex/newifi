@@ -148,8 +148,8 @@
       if ((s.league || '') !== league) return;
       var rec = parseRecord(s.reg);
       rows.push({
-        name: t.name, slug: t.slug,
-        logo: (t.logos && t.logos[0] && t.logos[0].url) || null,
+        name: s.name || t.name, slug: t.slug,
+        logo: s.logo || (t.logos && t.logos[0] && t.logos[0].url) || null,
         conference: s.conference || 'League',
         record: s.reg || '0-0',
         w: rec.w, l: rec.l, t: rec.t,
