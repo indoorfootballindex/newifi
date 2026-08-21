@@ -295,7 +295,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     <a href="players.html">Players</a>
     <a href="schedule.html">Schedule</a>
     <a href="scorigami.html">Scorigami</a>
-    <a href="#news">News</a>
+    <a href="news.html">News</a>
   </nav>
 </div>
 
