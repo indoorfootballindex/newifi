@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awards — Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--arena-black); color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+  .plain-link{color:inherit; text-decoration:none;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; padding:22px 24px 0;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:16px; font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  main{max-width:1100px; margin:0 auto; padding:0 24px 60px;}
+
+  .hero{display:flex; justify-content:space-between; align-items:flex-end; gap:20px; padding:44px 0 26px; flex-wrap:wrap;}
+  .hero h1{font-size:clamp(34px,5.5vw,48px); margin:0; color:var(--chalk);}
+  .hero-controls{display:flex; gap:12px;}
+  .hero-controls div{display:flex; flex-direction:column; gap:6px;}
+  .hero-controls label{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel);}
+  select.unit-select{
+    appearance:none; -webkit-appearance:none; background:var(--card); color:var(--chalk);
+    border:1px solid var(--card-line); border-radius:8px; padding:10px 32px 10px 14px;
+    font-family:'IBM Plex Mono',monospace; font-size:14px; cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%2382868c'/></svg>");
+    background-repeat:no-repeat; background-position:right 12px center;
+  }
+
+  section{padding:8px 0 36px;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;}
+  .section-head h2{font-size:22px; margin:0; color:var(--chalk);}
+
+  .award-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media (max-width:800px){.award-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:520px){.award-grid{grid-template-columns:1fr;}}
+  .award-card{background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:16px 18px;}
+  .award-card .label{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--crimson); font-weight:600; margin-bottom:8px;}
+  .award-card .winner{font-size:15px; color:var(--chalk); font-weight:600;}
+  .award-card .team{font-size:12px; color:var(--steel); margin-top:3px;}
+
+  .allpro-wrap, .weekly-wrap{border:1px solid var(--card-line); border-radius:10px; overflow:hidden;}
+  table{width:100%; border-collapse:collapse;}
+  thead th{background:var(--arena-black-2); text-align:left; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); padding:10px 16px; font-weight:600;}
+  td{padding:10px 16px; font-size:13px; border-bottom:1px solid var(--steel-line); color:var(--chalk-dim);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover td{background:rgba(255,255,255,0.02);}
+  td.pos{color:var(--amber); font-family:'IBM Plex Mono',monospace; width:60px;}
+  td.name{color:var(--chalk); font-weight:600;}
+  td.wk{color:var(--amber); font-family:'IBM Plex Mono',monospace; width:60px;}
+
+  .empty{padding:60px 24px; text-align:center; color:var(--steel);}
+
+  footer{max-width:1100px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);}
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a> / Awards</div>
+  <nav>
+    <a href="leagues.html">Leagues</a>
+    <a href="teams.html">Teams</a>
+    <a href="standings.html">Standings</a>
+    <a href="players.html">Players</a>
+    <a href="awards.html">Awards</a>
+    <a href="schedule.html">Schedule</a>
+    <a href="scorigami.html">Scorigami</a>
+    <a href="news.html">News</a>
+  </nav>
+</div>
+
+<main>
+  <div class="hero">
+    <h1 class="display">Awards</h1>
+    <div class="hero-controls">
+      <div><label for="yearSelect">Year</label><select class="unit-select" id="yearSelect"></select></div>
+      <div><label for="leagueSelect">League</label><select class="unit-select" id="leagueSelect"></select></div>
+    </div>
+  </div>
+
+  <div id="content"></div>
+  <div class="empty" id="emptyState" style="display:none;">No awards on file for that year/league.</div>
+</main>
+
+<footer>
+  <span>Indoor Football Index &middot; Awards archive.</span>
+  <span id="footerNote"></span>
+</footer>
+
+<script>
+  var AWARDS = [];
+
+  function esc(s){
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+  function playerLink(name){
+    if (!name) return '';
+    var s = String(name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    return '<a href="player.html?player=' + s + '" class="plain-link">' + esc(name) + '</a>';
+  }
+  function teamLink(team, teamSlug){
+    if (!team) return '';
+    var s = teamSlug || String(team).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    return '<a href="team.html?team=' + s + '" class="plain-link">' + esc(team) + '</a>';
+  }
+
+  function hashes(){
+    return '<div class="hashes" style="width:100%;height:14px;display:flex;align-items:center;"><svg preserveAspectRatio="none" viewBox="0 0 1100 14" style="width:100%;height:100%;display:block;"><line x1="0" y1="7" x2="1100" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>';
+  }
+
+  function render(){
+    var year = document.getElementById('yearSelect').value;
+    var league = document.getElementById('leagueSelect').value;
+    var rows = AWARDS.filter(function(a){ return a.year === year && a.league === league; });
+    var content = document.getElementById('content');
+    var empty = document.getElementById('emptyState');
+
+    if (!rows.length){
+      content.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    var allPro = rows.filter(function(a){ return a.award.indexOf('All-Pro') !== -1; });
+    var weekly = rows.filter(function(a){ return a.week; });
+    var seasonEnd = rows.filter(function(a){ return !a.week && a.award.indexOf('All-Pro') === -1; });
+
+    var html = '';
+
+    if (seasonEnd.length){
+      html += '<section><div class="section-head"><h2 class="display">Season Awards</h2></div><div class="award-grid">' +
+        seasonEnd.map(function(a){
+          return '<div class="award-card"><div class="label">' + esc(a.award) + '</div>' +
+            '<div class="winner">' + playerLink(a.name) + '</div>' +
+            '<div class="team">' + teamLink(a.team, a.teamSlug) + (a.position ? ' &middot; ' + esc(a.position) : '') + '</div></div>';
+        }).join('') + '</div></section>' + hashes();
+    }
+
+    if (allPro.length){
+      html += '<section><div class="section-head"><h2 class="display">First Team All-Pro</h2></div>' +
+        '<div class="allpro-wrap"><table><thead><tr><th>Pos</th><th>Player</th><th>Team</th></tr></thead><tbody>' +
+        allPro.map(function(a){
+          return '<tr><td class="pos">' + esc(a.position||'') + '</td><td class="name">' + playerLink(a.name) + '</td><td>' + teamLink(a.team, a.teamSlug) + '</td></tr>';
+        }).join('') + '</tbody></table></div></section>' + hashes();
+    }
+
+    if (weekly.length){
+      var byWeek = {};
+      weekly.forEach(function(a){
+        if (!byWeek[a.week]) byWeek[a.week] = [];
+        byWeek[a.week].push(a);
+      });
+      var weeks = Object.keys(byWeek).map(Number).sort(function(x,y){ return x-y; });
+      html += '<section><div class="section-head"><h2 class="display">Weekly Awards</h2></div>' +
+        '<div class="weekly-wrap"><table><thead><tr><th>Week</th><th>Award</th><th>Player</th><th>Team</th></tr></thead><tbody>' +
+        weeks.map(function(w){
+          return byWeek[w].map(function(a, i){
+            var shortAward = a.award.replace(' Player of the Week', '');
+            return '<tr>' + (i===0 ? '<td class="wk" rowspan="' + byWeek[w].length + '">' + w + '</td>' : '') +
+              '<td>' + esc(shortAward) + '</td><td class="name">' + playerLink(a.name) + '</td><td>' + teamLink(a.team, a.teamSlug) + '</td></tr>';
+          }).join('');
+        }).join('') + '</tbody></table></div></section>';
+    }
+
+    content.innerHTML = html;
+  }
+
+  fetch('awards.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      AWARDS = data.filter(function(a){ return !a.isCoachAward; }); // coach awards will move to coach profiles once those exist
+      var years = [], leagues = [];
+      AWARDS.forEach(function(a){
+        if (years.indexOf(a.year) === -1) years.push(a.year);
+        if (leagues.indexOf(a.league) === -1) leagues.push(a.league);
+      });
+      years.sort(function(x,y){ return y-x; });
+      leagues.sort();
+
+      var yearSel = document.getElementById('yearSelect');
+      years.forEach(function(y){
+        var opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        yearSel.appendChild(opt);
+      });
+      var leagueSel = document.getElementById('leagueSelect');
+      leagues.forEach(function(lg){
+        var opt = document.createElement('option');
+        opt.value = lg; opt.textContent = lg;
+        leagueSel.appendChild(opt);
+      });
+
+      if (!years.length){
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+      yearSel.value = years[0];
+      leagueSel.value = leagues[0];
+      document.getElementById('footerNote').textContent = AWARDS.length + ' awards on file';
+
+      yearSel.addEventListener('change', render);
+      leagueSel.addEventListener('change', render);
+      render();
+    })
+    .catch(function(err){
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('emptyState').textContent = "Couldn't load awards.json: " + err;
+    });
+</script>
+
+</body>
+</html>
