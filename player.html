@@ -70,6 +70,15 @@
   .stat-card{background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:16px 14px; text-align:center;}
   .stat-card .v{font-size:26px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
   .stat-card .k{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--steel); margin-top:6px;}
+
+  .awards-list{display:flex; flex-direction:column; gap:8px;}
+  .award-row{
+    display:flex; justify-content:space-between; align-items:center; gap:14px; background:var(--card);
+    border:1px solid var(--card-line); border-radius:8px; padding:12px 16px; flex-wrap:wrap;
+  }
+  .award-row .name{font-size:14px; color:var(--chalk); font-weight:600;}
+  .award-row .meta{font-size:12px; color:var(--steel);}
+  .award-row .year{font-size:12px; color:var(--amber); font-family:'IBM Plex Mono',monospace; white-space:nowrap;}
   @media (max-width:700px){.stat-grid{grid-template-columns:repeat(3,1fr);}}
 
   .table-wrap{border:1px solid var(--card-line); border-radius:10px; overflow-x:auto; margin-bottom:8px;}
@@ -105,6 +114,7 @@
     <a href="teams.html">Teams</a>
     <a href="standings.html">Standings</a>
     <a href="players.html">Players</a>
+    <a href="awards.html">Awards</a>
     <a href="schedule.html">Schedule</a>
     <a href="scorigami.html">Scorigami</a>
     <a href="news.html">News</a>
@@ -236,7 +246,7 @@
     return (v % 1 === 0) ? v.toLocaleString() : v.toFixed(1);
   }
 
-  function render(rows, slugParam){
+  function render(rows, slugParam, awards){
     var main = document.getElementById('main');
     if (!rows.length){
       main.innerHTML = '<div class="empty-state"><h1>Player not found</h1><p>No stats on file for &ldquo;' + slugParam + '&rdquo;.</p></div>';
@@ -289,6 +299,19 @@
         '<div class="table-wrap"><table><thead><tr>' + headerHtml + '</tr></thead><tbody>' + bodyHtml + careerRow + '</tbody></table></div>';
     }).join('');
 
+    var awardsHtml = '';
+    if (awards && awards.length){
+      var sortedAwards = awards.slice().sort(function(a,b){ return b.year - a.year || (b.week||0) - (a.week||0); });
+      var rowsHtml = sortedAwards.map(function(a){
+        var weekLabel = a.week ? ' &middot; Week ' + a.week : '';
+        return '<div class="award-row">' +
+          '<div><div class="name">' + a.award + '</div><div class="meta">' + a.league + weekLabel + '</div></div>' +
+          '<div class="year">' + a.year + '</div>' +
+        '</div>';
+      }).join('');
+      awardsHtml = '<div class="section"><h2>Awards</h2><div class="awards-list">' + rowsHtml + '</div></div>';
+    }
+
     main.innerHTML =
       '<a class="back-link" href="index.html">&larr; Indoor Football Index</a>' +
       '<div class="hero-card">' +
@@ -298,6 +321,7 @@
         '<div class="teams-value">' + teams.join(', ') + '</div>' +
       '</div>' +
       '<div class="section"><h2>Career Stats</h2><div class="stat-grid">' + statCards + '</div></div>' +
+      awardsHtml +
       '<div class="section"><h2>Season by Season</h2>' + categoryHtml + '</div>';
   }
 
@@ -307,11 +331,15 @@
   if (!playerSlug){
     document.getElementById('main').innerHTML = '<div class="empty-state"><h1>No player specified</h1><p>Link to this page with <span class="mono">?player=player-slug</span>.</p></div>';
   } else {
-    fetch('players.json')
-      .then(function(res){ return res.json(); })
-      .then(function(data){
-        var rows = data.filter(function(r){ return r.slug === playerSlug; });
-        render(rows, playerSlug);
+    Promise.all([
+      fetch('players.json').then(function(r){ return r.json(); }),
+      fetch('awards.json').then(function(r){ return r.json(); }).catch(function(){ return []; })
+    ])
+      .then(function(results){
+        var players = results[0], awards = results[1];
+        var rows = players.filter(function(r){ return r.slug === playerSlug; });
+        var playerAwards = awards.filter(function(a){ return a.slug === playerSlug && !a.isCoachAward; });
+        render(rows, playerSlug, playerAwards);
       })
       .catch(function(err){
         document.getElementById('main').innerHTML = '<div class="empty-state"><h1>Couldn\'t load player data</h1><p>' + err + '</p></div>';
