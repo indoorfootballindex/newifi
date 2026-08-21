@@ -5,45 +5,20 @@ Indoor Football Index — home page generator.
 Reads the 'Schedule' tab of a workbook like 2026_IFI.xlsx and builds index.html:
   - Recent games: the 10 most recently completed games before today
   - Upcoming schedule: the 10 next unplayed games from today forward
-
-News stays hand-edited (it's editorial content, not schedule data) — see the
-NEWS_ITEMS list below to update it.
+  - News: the 4 most recent articles from news.json (built separately by
+    build_news_json.py from a folder of Word docs) — run that first, or
+    this section will just show an empty state.
 
 Usage:
-    python3 generate_home_page.py path/to/2026_IFI.xlsx path/to/index.html
+    python3 generate_home_page.py path/to/2026_IFI.xlsx path/to/index.html [path/to/news.json]
 """
 
 import sys
+import os
+import re
+import json
 import datetime
 import openpyxl
-
-# Edit these by hand whenever you want to change the News section.
-NEWS_ITEMS = [
-    {
-        "kicker": "Season recap", "feature": True,
-        "title": "Strike Force's historic season ends in the West Championship",
-        "body": "San Diego closed the 2026 regular season 13\u20133 \u2014 the best record in franchise history \u2014 and claimed the #1 seed in the West. After a first-round win over Tucson, the run ended one game short, falling 37\u201343 to eventual champion Arizona in the conference title game.",
-        "date": "Aug 10, 2026",
-    },
-    {
-        "kicker": "Franchise records", "feature": False,
-        "title": "Marques Rodgers still owns the Strike Force record book",
-        "body": "Five years after his final season in San Diego, Rodgers remains the franchise leader in receiving yards, receiving touchdowns, receptions, all-purpose yards, and kickoff return yards.",
-        "date": "Aug 6, 2026",
-    },
-    {
-        "kicker": "Looking back", "feature": False,
-        "title": "Remembering the Panthers' 2023 title run",
-        "body": "Bay Area went 10\u20135 in the regular season before running the postseason table at 3\u20130, capturing the only championship in franchise history to date.",
-        "date": "Aug 3, 2026",
-    },
-    {
-        "kicker": "Site update", "feature": False,
-        "title": "Welcome to the new Indoor Football Index",
-        "body": "Franchise histories, record books, and full box scores are going up team by team. More franchises, more seasons, and league-wide stats are on the way.",
-        "date": "Aug 19, 2026",
-    },
-]
 
 
 def esc(s):
@@ -145,19 +120,38 @@ def game_card(g, logos):
     </div>'''
 
 
-def build_news_html():
+def load_news(news_json_path):
+    if not news_json_path or not os.path.isfile(news_json_path):
+        return []
+    with open(news_json_path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def strip_tags(html):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html or "")).strip()
+
+
+def build_news_html(articles):
+    if not articles:
+        return ('  <div class="tba-strip"><div class="big">No news articles yet.</div>'
+                '<div class="small">Run build_news_json.py against a folder of Word docs to populate this.</div></div>')
     cards = []
-    for item in NEWS_ITEMS:
-        cls = "news-card feature" if item["feature"] else "news-card"
+    for item in articles[:4]:
+        cls = "news-card feature" if item.get("featured") else "news-card"
+        excerpt_len = 260 if item.get("featured") else 160
+        excerpt = strip_tags(item.get("body"))
+        if len(excerpt) > excerpt_len:
+            excerpt = excerpt[:excerpt_len].strip() + "\u2026"
+        kicker_html = f'<div class="kicker">{esc(item["kicker"])}</div>' if item.get("kicker") else ""
         cards.append(
-            f'    <div class="{cls}">\n'
-            f'      <div class="kicker">{esc(item["kicker"])}</div>\n'
+            f'    <a class="{cls}" href="article.html?article={esc(item["slug"])}">\n'
+            f'      {kicker_html}\n'
             f'      <h3>{esc(item["title"])}</h3>\n'
-            f'      <p>{esc(item["body"])}</p>\n'
-            f'      <div class="date">{esc(item["date"])}</div>\n'
-            f'    </div>'
+            f'      <p>{esc(excerpt)}</p>\n'
+            f'      <div class="date">{esc(item.get("date", ""))}</div>\n'
+            f'    </a>'
         )
-    return "\n".join(cards)
+    return '  <div class="news-grid">\n' + "\n".join(cards) + "\n  </div>"
 
 
 TEMPLATE = r"""<!DOCTYPE html>
@@ -265,8 +259,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   .news-grid{{display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:16px;}}
   .news-card{{
     background:var(--card); border:1px solid var(--card-line); border-radius:10px;
-    padding:22px; display:flex; flex-direction:column; gap:10px;
+    padding:22px; display:flex; flex-direction:column; gap:10px; transition:border-color .15s;
   }}
+  .news-card:hover{{border-color:var(--crimson);}}
   .news-card.feature{{grid-row:span 2; padding:28px;}}
   .news-card .kicker{{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--crimson); font-weight:600;}}
   .news-card h3{{font-size:18px; margin:0; color:var(--chalk); line-height:1.35;}}
@@ -336,10 +331,9 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section id="news">
   <div class="section-head">
     <h2 class="display">News</h2>
+    <p class="note"><a href="news.html" style="color:var(--crimson); text-decoration:underline;">See all news &rarr;</a></p>
   </div>
-  <div class="news-grid">
 {news_html}
-  </div>
 </section>
 
 <footer>
@@ -352,7 +346,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 """
 
 
-def generate(xlsx_path, out_path):
+def generate(xlsx_path, out_path, news_json_path=None):
     games = load_schedule(xlsx_path)
     logos = load_team_logos(xlsx_path)
     today = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -377,21 +371,24 @@ def generate(xlsx_path, out_path):
         upcoming_html = ('  <div class="tba-strip"><div class="big">No upcoming games found.</div>'
                           '<div class="small">Check that the Schedule tab has future dates without scores.</div></div>')
 
+    articles = load_news(news_json_path or os.path.join(os.path.dirname(os.path.abspath(out_path)), "news.json"))
+
     html = TEMPLATE.format(
         upcoming_count=len(upcoming),
         recent_count=len(recent),
         upcoming_html=upcoming_html,
         recent_html=recent_html,
-        news_html=build_news_html(),
+        news_html=build_news_html(articles),
     )
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"Wrote {out_path} ({len(recent)} recent, {len(upcoming)} upcoming)")
+    print(f"Wrote {out_path} ({len(recent)} recent, {len(upcoming)} upcoming, {len(articles)} news articles)")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python3 generate_home_page.py <schedule.xlsx> <output.html>")
+    if len(sys.argv) not in (3, 4):
+        print("Usage: python3 generate_home_page.py <2026_IFI.xlsx> <output.html> [news.json]")
         sys.exit(1)
-    generate(sys.argv[1], sys.argv[2])
+    news_arg = sys.argv[3] if len(sys.argv) == 4 else None
+    generate(sys.argv[1], sys.argv[2], news_arg)

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article — Indoor Football Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --arena-black:#111316;
+    --arena-black-2:#1a1d21;
+    --crimson:#D4263A;
+    --amber:#E8A33D;
+    --turf:#3C6E47;
+    --chalk:#F2EFE6;
+    --chalk-dim:#c9c6bc;
+    --steel:#82868c;
+    --steel-line:#2a2d31;
+    --card:#1c1f23;
+    --card-line:#2e3136;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--arena-black); color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:760px; margin:0 auto; padding:22px 24px 0;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
+  .topbar .site strong{color:var(--chalk); font-weight:600;}
+  .topbar nav{display:flex; gap:20px; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
+  .topbar nav a{text-decoration:none;}
+  .topbar nav a:hover{color:var(--chalk);}
+
+  main{max-width:760px; margin:0 auto; padding:0 24px 60px;}
+
+  .back-link{display:block; padding:24px 0 0; font-size:13px; color:var(--steel); text-decoration:none;}
+  .back-link:hover{color:var(--chalk);}
+
+  .kicker{font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--crimson); font-weight:600; margin:24px 0 12px;}
+  h1.title{font-size:clamp(30px,5vw,44px); line-height:1.1; margin:0 0 14px; color:var(--chalk);}
+  .article-date{font-size:12px; color:var(--steel); font-family:'IBM Plex Mono',monospace; margin-bottom:32px;}
+
+  .article-body{font-size:16px; line-height:1.75; color:var(--chalk-dim);}
+  .article-body p{margin:0 0 18px;}
+  .article-body h1, .article-body h2, .article-body h3{color:var(--chalk); font-weight:700; margin:32px 0 14px;}
+  .article-body h1{font-size:26px;}
+  .article-body h2{font-size:22px;}
+  .article-body h3{font-size:18px;}
+  .article-body strong{color:var(--chalk); font-weight:700;}
+  .article-body em{color:var(--chalk-dim);}
+  .article-body a{color:var(--amber); text-decoration:underline;}
+  .article-body ul, .article-body ol{margin:0 0 18px; padding-left:24px;}
+  .article-body li{margin-bottom:6px;}
+  .article-body img{max-width:100%; height:auto; border-radius:10px; margin:20px 0; display:block;}
+  .article-body blockquote{
+    border-left:3px solid var(--crimson); margin:20px 0; padding:4px 0 4px 18px; color:var(--chalk-dim); font-style:italic;
+  }
+  .article-body hr{border:none; border-top:1px solid var(--card-line); margin:32px 0;}
+
+  .empty-state{padding:60px 24px; text-align:center; color:var(--steel);}
+  .empty-state h1{color:var(--chalk); font-size:28px; margin-bottom:10px;}
+
+  footer{max-width:760px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);}
+
+  ::selection{background:var(--crimson); color:var(--chalk);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="site"><a href="index.html" style="text-decoration:none;"><strong>Indoor Football Index</strong></a> / News</div>
+  <nav>
+    <a href="news.html">All News</a>
+  </nav>
+</div>
+
+<main id="main">
+  <div class="empty-state" id="loading">Loading article&hellip;</div>
+</main>
+
+<footer>
+  <span>Indoor Football Index &middot; News archive.</span>
+  <span id="footer-title"></span>
+</footer>
+
+<script>
+  function esc(s){
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  function render(a){
+    var main = document.getElementById('main');
+    document.getElementById('footer-title').textContent = a.title;
+    document.title = a.title + ' \u2014 Indoor Football Index';
+
+    main.innerHTML =
+      '<a class="back-link" href="news.html">&larr; All News</a>' +
+      (a.kicker ? '<div class="kicker">' + esc(a.kicker) + '</div>' : '<div style="margin-top:24px;"></div>') +
+      '<h1 class="title">' + esc(a.title) + '</h1>' +
+      '<div class="article-date mono">' + esc(a.date || '') + '</div>' +
+      '<div class="article-body">' + (a.body || '') + '</div>';
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var articleSlug = params.get('article');
+
+  if (!articleSlug){
+    document.getElementById('main').innerHTML = '<div class="empty-state"><h1>No article specified</h1><p>Link to this page with <span class="mono">?article=article-slug</span>.</p></div>';
+  } else {
+    fetch('news.json')
+      .then(function(r){ return r.json(); })
+      .then(function(articles){
+        var a = articles.find(function(x){ return x.slug === articleSlug; });
+        if (!a){
+          document.getElementById('main').innerHTML = '<div class="empty-state"><h1>Article not found</h1><p>No article on file for &ldquo;' + esc(articleSlug) + '&rdquo;.</p></div>';
+          return;
+        }
+        render(a);
+      })
+      .catch(function(err){
+        document.getElementById('main').innerHTML = '<div class="empty-state"><h1>Couldn\'t load article</h1><p>' + err + '</p></div>';
+      });
+  }
+</script>
+
+</body>
+</html>
