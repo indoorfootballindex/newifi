@@ -85,6 +85,18 @@
 
   .empty{padding:60px 24px; text-align:center; color:var(--steel);}
 
+  .submit-card{
+    margin-top:32px; padding:24px; border:1px dashed var(--card-line); border-radius:12px;
+    background:var(--card); text-align:center;
+  }
+  .submit-card h3{margin:0 0 6px; font-size:16px; color:var(--chalk);}
+  .submit-card p{margin:0 0 16px; font-size:13px; color:var(--steel);}
+  .submit-card a.submit-btn{
+    display:inline-block; background:var(--crimson); color:var(--chalk); font-weight:600;
+    font-size:13px; padding:10px 22px; border-radius:8px; text-decoration:none;
+  }
+  .submit-card a.submit-btn:hover{background:#b91f30;}
+
   footer{max-width:820px; margin:0 auto; padding:40px 24px 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--steel);}
 
   ::selection{background:var(--crimson); color:var(--chalk);}
@@ -283,6 +295,12 @@
   <div class="result-count" id="result-count">Loading&hellip;</div>
   <div class="player-list" id="player-list"></div>
   <div class="empty" id="empty-state" style="display:none;">No players match that search.</div>
+
+  <div class="submit-card">
+    <h3>Don't see yourself?</h3>
+    <p>If you played and your stats aren't listed, you can submit them yourself.</p>
+    <a class="submit-btn" href="PASTE_YOUR_GOOGLE_FORM_LINK_HERE" target="_blank" rel="noopener">Submit Your Stats</a>
+  </div>
 </main>
 
 <footer>

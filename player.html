@@ -552,6 +552,9 @@
     var badges = '';
     if (latestPos) badges += '<div class="pos-badge">' + latestPos + '</div>';
     if (coach) badges += '<div class="pos-badge" style="background:var(--turf); margin-left:8px;">' + (coach.active ? 'Head Coach' : 'Former Coach') + '</div>';
+    if (rows.length && rows.some(function(r){ return r.userAdded; })){
+      badges += '<div class="pos-badge" style="background:var(--steel); margin-left:8px;" title="Stats submitted by a user, not sourced from official box scores">Community Submitted</div>';
+    }
 
     var teamsBlock = teams.length
       ? '<div class="teams-label">Played For</div><div class="teams-value">' + teams.join(', ') + '</div>'

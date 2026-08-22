@@ -97,6 +97,12 @@ def load_master(xlsx_path):
         print(f"Headers found: {list(idx.keys())}")
         sys.exit(1)
 
+    user_added_col = None
+    for h in idx:
+        if str(h).strip().lower() in ("user added", "useradded", "community submitted"):
+            user_added_col = h
+            break
+
     out = []
     bad_season_rows = []
     for r in rows[1:]:
@@ -111,6 +117,10 @@ def load_master(xlsx_path):
         # normalize to 'Season' so every page downstream can rely on it.
         if "Season" not in row and "Year" in row:
             row["Season"] = row.pop("Year")
+        user_added = False
+        if user_added_col is not None:
+            raw_flag = row.pop(user_added_col, None)
+            user_added = str(raw_flag).strip().lower() in ("y", "yes", "true", "1")
         stats = {
             k: coerce_number(v) for k, v in row.items()
             if k and k not in ("Name", team_col) and v is not None and v != ""
@@ -122,6 +132,7 @@ def load_master(xlsx_path):
             "name": name,
             "slug": slug(name),
             "team": team_name,
+            "userAdded": user_added,
             **stats,
         })
 
