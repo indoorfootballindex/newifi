@@ -64,13 +64,15 @@ def load_leagues(wb):
             "years": esc_none(get(r, "Years Active")),
             "logo": esc_none(get(r, "Logo")),
             "commissioner": esc_none(get(r, "Commish")),
-            "history": esc_none(get(r, "History")),
+            "history": esc_none(get(r, "History")) or esc_none(get(r, "About")),
             "seasons": {},
         }
     return out
 
 
 def load_season_info(wb):
+    if "Season Info" not in wb.sheetnames:
+        return {}
     ws = wb["Season Info"]
     rows = list(ws.iter_rows(values_only=True))
     headers = rows[0]
