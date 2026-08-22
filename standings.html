@@ -331,7 +331,7 @@
       rows.push({
         name: s.name || t.name, slug: t.slug,
         logo: s.logo || (t.logos && t.logos[0] && t.logos[0].url) || null,
-        conference: s.conference || 'League',
+        conference: s.conference || null,
         record: s.reg || '0-0',
         result: s.result || null,
         w: rec.w, l: rec.l, t: rec.t,
@@ -360,34 +360,47 @@
     head.innerHTML = '<tr><th>Team</th><th class="num">Record</th><th class="num">W</th><th class="num">L</th>' +
       (showResult ? '<th>Result</th>' : '') + '</tr>';
 
+    var hasRealConferences = rows.some(function(r){ return r.conference; });
+
     var byConf = {};
     var confOrder = [];
     rows.forEach(function(r){
-      if (!byConf[r.conference]){ byConf[r.conference] = []; confOrder.push(r.conference); }
-      byConf[r.conference].push(r);
+      var key = hasRealConferences ? (r.conference || 'League') : 'League';
+      if (!byConf[key]){ byConf[key] = []; confOrder.push(key); }
+      byConf[key].push(r);
     });
     confOrder.sort();
 
+    function rowHtml(r){
+      var logoHtml = r.logo
+        ? '<img src="' + esc(r.logo) + '" alt="' + esc(r.name) + ' logo" onerror="this.parentElement.style.display=\'none\'">'
+        : '';
+      return '<tr class="team-row">' +
+        '<td><div class="team-cell"><div class="logo">' + logoHtml + '</div><a href="team.html?team=' + esc(r.slug) + '">' + esc(r.name) + '</a></div></td>' +
+        '<td class="record">' + esc(r.record) + '</td>' +
+        '<td class="num">' + r.w + '</td>' +
+        '<td class="num">' + r.l + '</td>' +
+        (showResult ? '<td class="result">' + (r.result ? esc(r.result) : '&ndash;') + '</td>' : '') +
+      '</tr>';
+    }
+
     var html = '';
-    confOrder.forEach(function(conf){
-      var teamRows = byConf[conf].slice().sort(function(a,b){
+    if (hasRealConferences){
+      confOrder.forEach(function(conf){
+        var teamRows = byConf[conf].slice().sort(function(a,b){
+          if (b.w !== a.w) return b.w - a.w;
+          return a.l - b.l;
+        });
+        html += '<tr class="conf-row"><td colspan="' + colCount + '">' + esc(conf) + '</td></tr>';
+        teamRows.forEach(function(r){ html += rowHtml(r); });
+      });
+    } else {
+      var allRows = rows.slice().sort(function(a,b){
         if (b.w !== a.w) return b.w - a.w;
         return a.l - b.l;
       });
-      html += '<tr class="conf-row"><td colspan="' + colCount + '">' + esc(conf) + '</td></tr>';
-      teamRows.forEach(function(r){
-        var logoHtml = r.logo
-          ? '<img src="' + esc(r.logo) + '" alt="' + esc(r.name) + ' logo" onerror="this.parentElement.style.display=\'none\'">'
-          : '';
-        html += '<tr class="team-row">' +
-          '<td><div class="team-cell"><div class="logo">' + logoHtml + '</div><a href="team.html?team=' + esc(r.slug) + '">' + esc(r.name) + '</a></div></td>' +
-          '<td class="record">' + esc(r.record) + '</td>' +
-          '<td class="num">' + r.w + '</td>' +
-          '<td class="num">' + r.l + '</td>' +
-          (showResult ? '<td class="result">' + (r.result ? esc(r.result) : '&ndash;') + '</td>' : '') +
-        '</tr>';
-      });
-    });
+      allRows.forEach(function(r){ html += rowHtml(r); });
+    }
     body.innerHTML = html;
   }
 
