@@ -34,6 +34,12 @@ def fmt_num(v):
     return v
 
 
+def norm_league(v):
+    """League codes should be uppercase acronyms, but source sheets
+    occasionally have stray lowercase entries (e.g. 'af2' next to 'AF2')."""
+    return v.strip().upper() if isinstance(v, str) and v.strip() else v
+
+
 def main():
     if len(sys.argv) != 3:
         print("Usage: python3 build_schedule_json.py <2026_IFI.xlsx> <schedule.json>")
@@ -77,7 +83,7 @@ def main():
             "a": away,
             "hs": home_score,
             "as": away_score,
-            "lg": r[idx["League"]] if "League" in idx else None,
+            "lg": norm_league(r[idx["League"]]) if "League" in idx else None,
             "wk": week,
             "tm": r[idx["Time (CST)"]] if "Time (CST)" in idx else None,
             "w": r[idx["Watch"]] if "Watch" in idx else None,

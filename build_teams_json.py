@@ -33,6 +33,14 @@ def esc_none(v):
     return v if v not in (None, "") else None
 
 
+def norm_league(v):
+    """League codes should be uppercase acronyms (IFL, AF2, ...), but the
+    source sheets occasionally have stray lowercase entries (e.g. 'af2'
+    next to 'AF2'). Normalizing here means every consuming page can match
+    on league code without needing its own case-insensitive comparison."""
+    return v.strip().upper() if isinstance(v, str) and v.strip() else v
+
+
 def parse_record_cell(v):
     """Recovers a W-L(-T) value Excel/Sheets silently turned into a date."""
     if v is None:
@@ -107,7 +115,7 @@ def load_all_teams_bio(wb):
         bio[name] = {
             "name": name,
             "slug": slug(name),
-            "league": esc_none(get(r, "League")),
+            "league": norm_league(esc_none(get(r, "League"))),
             "years": esc_none(get(r, "Years")),
             "firstSeason": get(r, "First Season"),
             "regRecord": parse_record_cell(get(r, "Reg W-L-T")),
@@ -304,7 +312,7 @@ def load_sbs_teams(wb):
 
         out[(current_name, year)] = {
             "name": season_name,
-            "league": esc_none(get(r, "League")),
+            "league": norm_league(esc_none(get(r, "League"))),
             "reg": reg,
             "post": post,
             "conference": esc_none(get(r, "Conference")),
