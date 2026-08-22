@@ -3,15 +3,16 @@
 Indoor Football Index — one-command site updater.
 
 Regenerates players.json, teams.json, schedule.json, leagues.json,
-awards.json, coaches.json, news.json, and index.html from your source
-spreadsheets and articles. Doesn't touch git at all — commit and push
-through GitHub Desktop like normal once you're happy with the changes.
+awards.json, coaches.json, news.json, search-index.json, and index.html
+from your source spreadsheets and articles. Doesn't touch git at all —
+commit and push through GitHub Desktop like normal once you're happy with
+the changes.
 
 Must live in the same folder as build_players_json.py, build_teams_json.py,
 build_schedule_json.py, build_leagues_json.py, build_awards_json.py,
-build_coaches_json.py, build_news_json.py, and generate_home_page.py — it
-calls them exactly as you would by hand, in order, and stops immediately
-if any required step fails.
+build_coaches_json.py, build_news_json.py, build_search_index.py, and
+generate_home_page.py — it calls them exactly as you would by hand, in
+order, and stops immediately if any required step fails.
 
 Usage:
     python3 update_site.py
@@ -108,6 +109,10 @@ def main():
     run(
         [py, os.path.join(script_dir, "build_news_json.py"), args.news, os.path.join(args.site, "news.json")],
         "Rebuilding news.json",
+    )
+    run(
+        [py, os.path.join(script_dir, "build_search_index.py"), args.site, os.path.join(args.site, "search-index.json")],
+        "Rebuilding search-index.json",
     )
     run(
         [py, os.path.join(script_dir, "generate_home_page.py"), args.ifi, os.path.join(args.site, "index.html"),
