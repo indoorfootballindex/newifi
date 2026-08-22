@@ -206,7 +206,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   .topbar .site .crumb{{color:var(--steel);}}
   .nav-desktop{{display:flex; gap:22px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}}
   .nav-desktop a:hover{{color:var(--chalk);}}
-  .nav-mobile-quick{{display:none; gap:12px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel);}}
   .hamburger-btn{{display:none; background:none; border:none; color:var(--chalk); font-size:20px; line-height:1; cursor:pointer; padding:2px 4px; flex-shrink:0;}}
   .mobile-menu{{display:none; flex-direction:column; background:var(--card); border-bottom:1px solid var(--card-line); padding:6px 24px 14px;}}
   .mobile-menu.open{{display:flex;}}
@@ -214,7 +213,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   .mobile-menu a:last-child{{border-bottom:none;}}
   @media (max-width:860px){{
     .nav-desktop{{display:none;}}
-    .nav-mobile-quick{{display:flex;}}
     .hamburger-btn{{display:block;}}
     .topbar-inner{{padding:14px 16px; gap:10px; flex-wrap:wrap;}}
     .topbar .site{{font-size:11px;}}
@@ -316,11 +314,6 @@ TEMPLATE = r"""<!DOCTYPE html>
       <a href="schedule.html">Schedule</a>
       <a href="scorigami.html">Scorigami</a>
       <a href="news.html">News</a>
-    </nav>
-    <nav class="nav-mobile-quick">
-      <a href="teams.html">Teams</a>
-      <a href="players.html">Players</a>
-      <a href="schedule.html">Schedule</a>
     </nav>
     <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">&#9776;</button>
   </div>
