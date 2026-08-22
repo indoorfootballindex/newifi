@@ -106,6 +106,7 @@
   td.left{text-align:left; font-family:'Inter',sans-serif;}
   td.name a{font-weight:600; color:var(--chalk);}
   td.name a:hover{color:var(--amber);}
+  .award-star{color:var(--amber); font-size:12px; cursor:default; margin-left:2px;}
   .team{display:flex; align-items:center; gap:8px;}
   .team .logo{width:22px; height:22px; border-radius:4px; background:var(--arena-black-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;}
   .team .logo img{width:100%; height:100%; object-fit:contain; padding:2px;}
@@ -433,7 +434,7 @@
     }
   ];
 
-  var PLAYERS = [], TEAMS = [];
+  var PLAYERS = [], TEAMS = [], AWARDS = [];
   var teamGamesCache = {}; // "team||year" -> games played that season
   var teamLogoCache = {};
   var sortState = {};
@@ -478,6 +479,20 @@
     return (t && t.seasons && t.seasons[year]) ? (t.seasons[year].conference || 'League') : 'League';
   }
 
+  var yearlyAwardsCache = null;
+  function yearlyAwardsFor(slug, year, league){
+    if (!yearlyAwardsCache){
+      yearlyAwardsCache = {};
+      AWARDS.forEach(function(a){
+        if (a.week || a.isCoachAward) return; // weekly and coach awards excluded — season-end player awards only
+        var key = a.slug + '||' + a.year + '||' + a.league;
+        if (!yearlyAwardsCache[key]) yearlyAwardsCache[key] = [];
+        yearlyAwardsCache[key].push(a.award);
+      });
+    }
+    return yearlyAwardsCache[slug + '||' + year + '||' + league] || [];
+  }
+
   function populateSelect(id, values, defaultVal){
     var sel = document.getElementById(id);
     sel.innerHTML = '';
@@ -502,9 +517,11 @@
     return rows.map(function(r){
       var gp = teamGamesPlayed(r.team, year);
       var qualifies = gp ? (num(r.GP) || 0) >= gp * 0.75 : true;
+      var slug = playerSlug(r.name);
       return {
-        name: r.name, slug: playerSlug(r.name), team: r.team, teamSlug: teamSlug(r.team),
-        conference: teamConference(r.team, year), qualifies: qualifies, raw: r
+        name: r.name, slug: slug, team: r.team, teamSlug: teamSlug(r.team),
+        conference: teamConference(r.team, year), qualifies: qualifies, raw: r,
+        awards: yearlyAwardsFor(slug, year, league)
       };
     });
   }
@@ -532,9 +549,12 @@
       var cells = cat.cols.map(function(c){ return '<td>' + fmt(c, c.get(r.raw)) + '</td>'; }).join('');
       var logo = teamLogo(r.team);
       var logoHtml = logo ? '<img src="' + esc(logo) + '" alt="">' : '';
+      var starHtml = r.awards && r.awards.length
+        ? ' <span class="award-star" title="' + esc(r.awards.join(', ')) + '">&#9733;</span>'
+        : '';
       return '<tr class="' + (r.qualifies ? '' : 'non-qualifying') + '">' +
         '<td class="rank">' + (rankOffset + i + 1) + '</td>' +
-        '<td class="left name"><a href="player.html?player=' + esc(r.slug) + '" class="plain-link">' + esc(r.name) + '</a></td>' +
+        '<td class="left name"><a href="player.html?player=' + esc(r.slug) + '" class="plain-link">' + esc(r.name) + '</a>' + starHtml + '</td>' +
         '<td class="left"><div class="team"><span class="logo">' + logoHtml + '</span><a href="team.html?team=' + esc(r.teamSlug) + '" class="plain-link">' + esc(r.team) + '</a></div></td>' +
         cells +
       '</tr>';
@@ -628,10 +648,12 @@
 
   Promise.all([
     fetch('players.json').then(function(r){ return r.json(); }),
-    fetch('teams.json').then(function(r){ return r.json(); }).catch(function(){ return []; })
+    fetch('teams.json').then(function(r){ return r.json(); }).catch(function(){ return []; }),
+    fetch('awards.json').then(function(r){ return r.json(); }).catch(function(){ return []; })
   ]).then(function(results){
     PLAYERS = results[0];
     TEAMS = results[1];
+    AWARDS = results[2];
 
     var years = [], leagues = [];
     PLAYERS.forEach(function(r){
