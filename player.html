@@ -359,7 +359,7 @@
       ]
     },
     {
-      id: 'kicking', title: 'Kicking', trigger: ['FGA','XPA','Decues'],
+      id: 'kicking', title: 'Kicking', trigger: ['FGA','XPA','Deuces','Decues'],
       cols: [
         {label:'GP', get:function(r){return r['GP'];}},
         {label:'FGM', get:function(r){return r['FGM'];}},
@@ -368,7 +368,7 @@
         {label:'XPM', get:function(r){return r['XPM'];}},
         {label:'XPA', get:function(r){return r['XPA'];}},
         {label:'XP%', get:function(r){return pct(r['XPM'], r['XPA']);}},
-        {label:'Deuces', get:function(r){return r['Decues'];}}
+        {label:'Deuces', get:function(r){return r['Deuces'] != null ? r['Deuces'] : r['Decues'];}}
       ]
     },
     {
@@ -408,7 +408,7 @@
         {label:'KR', get:function(r){return r['KR TD'];}},
         {label:'FGM', get:function(r){return r['FGM'];}},
         {label:'XPM', get:function(r){return r['XPM'];}},
-        {label:'Deuces', get:function(r){return r['Decues'];}}
+        {label:'Deuces', get:function(r){return r['Deuces'] != null ? r['Deuces'] : r['Decues'];}}
       ]
     }
   ];
