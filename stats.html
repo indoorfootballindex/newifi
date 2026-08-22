@@ -392,7 +392,7 @@
       ]
     },
     {
-      id: 'kicking', title: 'Kicking', trigger: ['FGA','XPA'], sortCol: 'FGM',
+      id: 'kicking', title: 'Kicking', trigger: ['FGA','XPA','Decues'], sortCol: 'FGM',
       cols: [
         {label:'GP', get:function(r){return r['GP'];}},
         {label:'FGM', get:function(r){return r['FGM'];}},
@@ -400,7 +400,8 @@
         {label:'FG%', get:function(r){return pctNum(r['FGM'], r['FGA']);}, isPct:true},
         {label:'XPM', get:function(r){return r['XPM'];}},
         {label:'XPA', get:function(r){return r['XPA'];}},
-        {label:'XP%', get:function(r){return pctNum(r['XPM'], r['XPA']);}, isPct:true}
+        {label:'XP%', get:function(r){return pctNum(r['XPM'], r['XPA']);}, isPct:true},
+        {label:'Deuces', get:function(r){return r['Decues'];}}
       ]
     },
     {
@@ -429,7 +430,8 @@
         {label:'Rec', get:function(r){return r['Rec TD'];}},
         {label:'KR', get:function(r){return r['KR TD'];}},
         {label:'FGM', get:function(r){return r['FGM'];}},
-        {label:'XPM', get:function(r){return r['XPM'];}}
+        {label:'XPM', get:function(r){return r['XPM'];}},
+        {label:'Deuces', get:function(r){return r['Decues'];}}
       ]
     }
   ];
