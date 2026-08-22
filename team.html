@@ -312,7 +312,7 @@
   function renderCoaches(team){
     if (!team.coaches || !team.coaches.length) return '';
     var cards = team.coaches.map(function(c){
-      return '<div class="coach-card"><div class="name">' + esc(c.name) + '</div><div class="tenure mono">' + esc(c.tenure) + '</div></div>';
+      return '<div class="coach-card"><div class="name">' + playerLink(c.name) + '</div><div class="tenure mono">' + esc(c.tenure) + '</div></div>';
     }).join('');
     return '<section><div class="section-head"><h2 class="display">Coaching history</h2></div>' +
       '<div class="coaches">' + cards + '</div></section>' + hashes();

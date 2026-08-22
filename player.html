@@ -290,58 +290,63 @@
     return (v % 1 === 0) ? v.toLocaleString() : v.toFixed(1);
   }
 
-  function render(rows, slugParam, awards){
+  function render(rows, coach, slugParam, awards){
     var main = document.getElementById('main');
-    if (!rows.length){
-      main.innerHTML = '<div class="empty-state"><h1>Player not found</h1><p>No stats on file for &ldquo;' + slugParam + '&rdquo;.</p></div>';
+    if (!rows.length && !coach){
+      main.innerHTML = '<div class="empty-state"><h1>Not found</h1><p>No player or coach on file for &ldquo;' + slugParam + '&rdquo;.</p></div>';
       return;
     }
 
-    var name = rows[0].name;
-    var teams = [...new Set(rows.map(function(r){ return r.team; }))];
-    var positions = [...new Set(rows.map(function(r){ return r.Pos; }).filter(Boolean))];
-    var latestPos = rows.slice().sort(function(a,b){ return (b.Season||0)-(a.Season||0); })[0].Pos || positions[0] || '';
+    var name = rows.length ? rows[0].name : coach.name;
+    var teams = rows.length ? [...new Set(rows.map(function(r){ return r.team; }))] : [];
+    var positions = rows.length ? [...new Set(rows.map(function(r){ return r.Pos; }).filter(Boolean))] : [];
+    var latestPos = rows.length ? (rows.slice().sort(function(a,b){ return (b.Season||0)-(a.Season||0); })[0].Pos || positions[0] || '') : '';
 
     document.getElementById('footer-name').textContent = name;
     document.title = name + ' \u2014 Indoor Football Index';
 
-    var totals = {};
-    rows.forEach(function(r){
-      Object.keys(r).forEach(function(k){
-        if (typeof r[k] === 'number'){ totals[k] = (totals[k] || 0) + r[k]; }
+    var statsHtml = '', categoryHtml = '';
+    if (rows.length){
+      var totals = {};
+      rows.forEach(function(r){
+        Object.keys(r).forEach(function(k){
+          if (typeof r[k] === 'number'){ totals[k] = (totals[k] || 0) + r[k]; }
+        });
       });
-    });
-    var HEADLINE = ['P Yds','P TD','Rush Yds','Rush TD','Rec','Rec Yds','Rec TD','TotTkl','Sck','Def Int','Pts'];
-    var headlineLabels = {'P Yds':'Pass Yds','P TD':'Pass TD','Rush Yds':'Rush Yds','Rush TD':'Rush TD','Rec':'Rec','Rec Yds':'Rec Yds','Rec TD':'Rec TD','TotTkl':'Tackles','Sck':'Sacks','Def Int':'Int','Pts':'Points'};
-    var statCards = HEADLINE.filter(function(k){ return totals[k]; }).slice(0,5).map(function(k){
-      return '<div class="stat-card"><div class="v">' + fmt(totals[k]) + '</div><div class="k">' + headlineLabels[k] + '</div></div>';
-    }).join('');
-
-    var sortedRows = rows.slice().sort(function(a,b){ return (a.Season||0) - (b.Season||0); });
-
-    var categoryHtml = CATEGORIES.map(function(cat){
-      function hasRealData(r){
-        return cat.trigger.some(function(t){ var v = num(r[t]); return v != null && v !== 0; });
-      }
-      var relevantRows = sortedRows.filter(hasRealData);
-      if (!relevantRows.length) return '';
-
-      var headerHtml = '<th>Year</th><th>Team</th><th>League</th>' + cat.cols.map(function(c){ return '<th>' + c.label + '</th>'; }).join('');
-      var bodyHtml = relevantRows.map(function(r){
-        var cells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(r)) + '</td>'; }).join('');
-        return '<tr><td>' + (r.Season || '&ndash;') + '</td><td>' + r.team + '</td><td>' + (r.League || '&ndash;') + '</td>' + cells + '</tr>';
+      var HEADLINE = ['P Yds','P TD','Rush Yds','Rush TD','Rec','Rec Yds','Rec TD','TotTkl','Sck','Def Int','Pts'];
+      var headlineLabels = {'P Yds':'Pass Yds','P TD':'Pass TD','Rush Yds':'Rush Yds','Rush TD':'Rush TD','Rec':'Rec','Rec Yds':'Rec Yds','Rec TD':'Rec TD','TotTkl':'Tackles','Sck':'Sacks','Def Int':'Int','Pts':'Points'};
+      var statCards = HEADLINE.filter(function(k){ return totals[k]; }).slice(0,5).map(function(k){
+        return '<div class="stat-card"><div class="v">' + fmt(totals[k]) + '</div><div class="k">' + headlineLabels[k] + '</div></div>';
       }).join('');
+      statsHtml = '<div class="section"><h2>Career Stats</h2><div class="stat-grid">' + statCards + '</div></div>';
 
-      var careerCells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(totals)) + '</td>'; }).join('');
-      var teamCount = teams.length + ' TM' + (teams.length === 1 ? '' : 's');
-      var leagueSet = [];
-      relevantRows.forEach(function(r){ if (r.League && leagueSet.indexOf(r.League) === -1) leagueSet.push(r.League); });
-      var leagueLabel = leagueSet.length ? leagueSet.join(' / ') : '&ndash;';
-      var careerRow = '<tr class="career"><td>Career</td><td>' + teamCount + '</td><td>' + leagueLabel + '</td>' + careerCells + '</tr>';
+      var sortedRows = rows.slice().sort(function(a,b){ return (a.Season||0) - (b.Season||0); });
 
-      return '<div class="subhead">' + cat.title + '</div>' +
-        '<div class="table-wrap"><table><thead><tr>' + headerHtml + '</tr></thead><tbody>' + bodyHtml + careerRow + '</tbody></table></div>';
-    }).join('');
+      categoryHtml = CATEGORIES.map(function(cat){
+        function hasRealData(r){
+          return cat.trigger.some(function(t){ var v = num(r[t]); return v != null && v !== 0; });
+        }
+        var relevantRows = sortedRows.filter(hasRealData);
+        if (!relevantRows.length) return '';
+
+        var headerHtml = '<th>Year</th><th>Team</th><th>League</th>' + cat.cols.map(function(c){ return '<th>' + c.label + '</th>'; }).join('');
+        var bodyHtml = relevantRows.map(function(r){
+          var cells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(r)) + '</td>'; }).join('');
+          return '<tr><td>' + (r.Season || '&ndash;') + '</td><td>' + r.team + '</td><td>' + (r.League || '&ndash;') + '</td>' + cells + '</tr>';
+        }).join('');
+
+        var careerCells = cat.cols.map(function(c){ return '<td>' + fmt(c.get(totals)) + '</td>'; }).join('');
+        var teamCount = teams.length + ' TM' + (teams.length === 1 ? '' : 's');
+        var leagueSet = [];
+        relevantRows.forEach(function(r){ if (r.League && leagueSet.indexOf(r.League) === -1) leagueSet.push(r.League); });
+        var leagueLabel = leagueSet.length ? leagueSet.join(' / ') : '&ndash;';
+        var careerRow = '<tr class="career"><td>Career</td><td>' + teamCount + '</td><td>' + leagueLabel + '</td>' + careerCells + '</tr>';
+
+        return '<div class="subhead">' + cat.title + '</div>' +
+          '<div class="table-wrap"><table><thead><tr>' + headerHtml + '</tr></thead><tbody>' + bodyHtml + careerRow + '</tbody></table></div>';
+      }).join('');
+      categoryHtml = '<div class="section"><h2>Season by Season</h2>' + categoryHtml + '</div>';
+    }
 
     var awardsHtml = '';
     if (awards && awards.length){
@@ -356,17 +361,53 @@
       awardsHtml = '<div class="section"><h2>Awards</h2><div class="awards-list">' + rowsHtml + '</div></div>';
     }
 
+    var coachHtml = '';
+    if (coach){
+      var coachYears = Object.keys(coach.seasons || {}).sort(function(a,b){ return b-a; });
+      var coachRows = coachYears.map(function(y){
+        var s = coach.seasons[y];
+        var teamLink = s.teamSlug ? '<a href="team.html?team=' + s.teamSlug + '" class="plain-link">' + s.team + '</a>' : (s.team || '&ndash;');
+        return '<tr><td>' + y + '</td><td>' + teamLink + '</td><td>' + s.reg + '</td><td>' + (s.post || '&ndash;') + '</td></tr>';
+      }).join('');
+      var coachTable = coachYears.length
+        ? '<div class="table-wrap"><table><thead><tr><th>Year</th><th>Team</th><th>Reg</th><th>Post</th></tr></thead><tbody>' + coachRows + '</tbody></table></div>'
+        : '';
+
+      var historyLinks = (coach.teamHistory || []).map(function(t){
+        return t.slug ? '<a href="team.html?team=' + t.slug + '" class="plain-link">' + t.name + '</a>' : t.name;
+      }).join(', ');
+
+      coachHtml = '<div class="section"><h2>Coaching Career</h2>' +
+        '<div class="stat-grid">' +
+          '<div class="stat-card"><div class="v">' + coach.regRecord + '</div><div class="k">Regular Season</div></div>' +
+          (coach.postRecord ? '<div class="stat-card"><div class="v">' + coach.postRecord + '</div><div class="k">Postseason</div></div>' : '') +
+          '<div class="stat-card"><div class="v">' + coach.totalRecord + '</div><div class="k">Career Total</div></div>' +
+        '</div>' +
+        (coach.bio ? '<p style="color:var(--chalk-dim); line-height:1.7; margin:18px 0;">' + coach.bio + '</p>' : '') +
+        (historyLinks ? '<p style="color:var(--steel); font-size:13px; margin-bottom:18px;">Coached: ' + historyLinks + '</p>' : '') +
+        coachTable +
+      '</div>';
+    }
+
+    var badges = '';
+    if (latestPos) badges += '<div class="pos-badge">' + latestPos + '</div>';
+    if (coach) badges += '<div class="pos-badge" style="background:var(--turf); margin-left:8px;">' + (coach.active ? 'Head Coach' : 'Former Coach') + '</div>';
+
+    var teamsBlock = teams.length
+      ? '<div class="teams-label">Played For</div><div class="teams-value">' + teams.join(', ') + '</div>'
+      : '';
+
     main.innerHTML =
       '<a class="back-link" href="index.html">&larr; Indoor Football Index</a>' +
       '<div class="hero-card">' +
         '<h1 class="display">' + name + '</h1>' +
-        (latestPos ? '<div class="pos-badge">' + latestPos + '</div>' : '') +
-        '<div class="teams-label">Teams</div>' +
-        '<div class="teams-value">' + teams.join(', ') + '</div>' +
+        badges +
+        teamsBlock +
       '</div>' +
-      '<div class="section"><h2>Career Stats</h2><div class="stat-grid">' + statCards + '</div></div>' +
+      statsHtml +
       awardsHtml +
-      '<div class="section"><h2>Season by Season</h2>' + categoryHtml + '</div>';
+      coachHtml +
+      categoryHtml;
   }
 
   var params = new URLSearchParams(window.location.search);
@@ -377,16 +418,18 @@
   } else {
     Promise.all([
       fetch('players.json').then(function(r){ return r.json(); }),
+      fetch('coaches.json').then(function(r){ return r.json(); }).catch(function(){ return []; }),
       fetch('awards.json').then(function(r){ return r.json(); }).catch(function(){ return []; })
     ])
       .then(function(results){
-        var players = results[0], awards = results[1];
+        var players = results[0], coaches = results[1], awards = results[2];
         var rows = players.filter(function(r){ return r.slug === playerSlug; });
-        var playerAwards = awards.filter(function(a){ return a.slug === playerSlug && !a.isCoachAward; });
-        render(rows, playerSlug, playerAwards);
+        var coach = coaches.find(function(c){ return c.slug === playerSlug; });
+        var personAwards = awards.filter(function(a){ return a.slug === playerSlug; });
+        render(rows, coach, playerSlug, personAwards);
       })
       .catch(function(err){
-        document.getElementById('main').innerHTML = '<div class="empty-state"><h1>Couldn\'t load player data</h1><p>' + err + '</p></div>';
+        document.getElementById('main').innerHTML = '<div class="empty-state"><h1>Couldn\'t load profile data</h1><p>' + err + '</p></div>';
       });
   }
 </script>
