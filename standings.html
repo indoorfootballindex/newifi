@@ -41,8 +41,9 @@
   .topbar .site strong{color:var(--chalk); font-weight:600;}
   .nav-desktop{display:flex; gap:22px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
   .nav-desktop a:hover{color:var(--chalk);}
-  .nav-mobile-quick{display:none; gap:18px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel);}
-  .hamburger-btn{display:none; background:none; border:none; color:var(--chalk); font-size:22px; line-height:1; cursor:pointer; padding:4px 6px;}
+    .topbar .site .crumb{color:var(--steel);}
+  .nav-mobile-quick{display:none; gap:12px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel);}
+  .hamburger-btn{display:none; background:none; border:none; color:var(--chalk); font-size:20px; line-height:1; cursor:pointer; padding:2px 4px; flex-shrink:0;}
   .mobile-menu{display:none; flex-direction:column; background:var(--card); border-bottom:1px solid var(--card-line); padding:6px 24px 14px;}
   .mobile-menu.open{display:flex;}
   .mobile-menu a{padding:11px 0; font-size:13px; color:var(--chalk-dim); border-bottom:1px solid var(--steel-line); text-transform:uppercase; letter-spacing:0.05em;}
@@ -51,6 +52,9 @@
     .nav-desktop{display:none;}
     .nav-mobile-quick{display:flex;}
     .hamburger-btn{display:block;}
+    .topbar-inner{padding:14px 16px; gap:10px; flex-wrap:wrap;}
+    .topbar .site{font-size:11px;}
+    .topbar .site .crumb{display:none;}
   }
 
   main{max-width:1000px; margin:0 auto; padding:0 24px 60px;}
@@ -102,7 +106,7 @@
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a> / Standings</div>
+    <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a><span class="crumb"> / Standings</span></div>
     <nav class="nav-desktop">
       <a href="leagues.html">Leagues</a>
       <a href="teams.html">Teams</a>

@@ -203,10 +203,11 @@ TEMPLATE = r"""<!DOCTYPE html>
   .topbar-inner{{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}}
   .topbar .site{{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap;}}
   .topbar .site strong{{color:var(--chalk); font-weight:600;}}
+  .topbar .site .crumb{{color:var(--steel);}}
   .nav-desktop{{display:flex; gap:22px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}}
   .nav-desktop a:hover{{color:var(--chalk);}}
-  .nav-mobile-quick{{display:none; gap:18px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel);}}
-  .hamburger-btn{{display:none; background:none; border:none; color:var(--chalk); font-size:22px; line-height:1; cursor:pointer; padding:4px 6px;}}
+  .nav-mobile-quick{{display:none; gap:12px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel);}}
+  .hamburger-btn{{display:none; background:none; border:none; color:var(--chalk); font-size:20px; line-height:1; cursor:pointer; padding:2px 4px; flex-shrink:0;}}
   .mobile-menu{{display:none; flex-direction:column; background:var(--card); border-bottom:1px solid var(--card-line); padding:6px 24px 14px;}}
   .mobile-menu.open{{display:flex;}}
   .mobile-menu a{{padding:11px 0; font-size:13px; color:var(--chalk-dim); border-bottom:1px solid var(--steel-line); text-transform:uppercase; letter-spacing:0.05em;}}
@@ -215,6 +216,9 @@ TEMPLATE = r"""<!DOCTYPE html>
     .nav-desktop{{display:none;}}
     .nav-mobile-quick{{display:flex;}}
     .hamburger-btn{{display:block;}}
+    .topbar-inner{{padding:14px 16px; gap:10px; flex-wrap:wrap;}}
+    .topbar .site{{font-size:11px;}}
+    .topbar .site .crumb{{display:none;}}
   }}
 
   .hero{{max-width:1160px; margin:0 auto; padding:64px 24px 44px;}}
