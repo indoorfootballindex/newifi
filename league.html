@@ -372,6 +372,7 @@
         logo: s.logo || (t.logos && t.logos[0] && t.logos[0].url) || null,
         conference: s.conference || 'League',
         record: s.reg || '0-0',
+        result: s.result || null,
         w: rec.w, l: rec.l,
       });
     });
@@ -389,15 +390,20 @@
     });
     confOrder.sort();
 
-    var html = '<div class="standings-wrap"><table><thead><tr><th>Team</th><th class="num">Record</th><th class="num">W</th><th class="num">L</th></tr></thead><tbody>';
+    var showResult = rows.some(function(r){ return r.result; });
+    var colCount = showResult ? 5 : 4;
+
+    var html = '<div class="standings-wrap"><table><thead><tr><th>Team</th><th class="num">Record</th><th class="num">W</th><th class="num">L</th>' +
+      (showResult ? '<th>Result</th>' : '') + '</tr></thead><tbody>';
     confOrder.forEach(function(conf){
       var teamRows = byConf[conf].slice().sort(function(a,b){ return b.w - a.w || a.l - b.l; });
-      html += '<tr class="conf-row"><td colspan="4">' + esc(conf) + '</td></tr>';
+      html += '<tr class="conf-row"><td colspan="' + colCount + '">' + esc(conf) + '</td></tr>';
       teamRows.forEach(function(r){
         var logoHtml = r.logo ? '<img src="' + esc(r.logo) + '" alt="' + esc(r.name) + ' logo" onerror="this.parentElement.style.display=\'none\'">' : '';
         html += '<tr class="team-row">' +
           '<td><div class="standings-team"><div class="logo">' + logoHtml + '</div><a href="team.html?team=' + esc(r.slug) + '">' + esc(r.name) + '</a></div></td>' +
           '<td class="record">' + esc(r.record) + '</td><td class="num">' + r.w + '</td><td class="num">' + r.l + '</td>' +
+          (showResult ? '<td>' + (r.result ? esc(r.result) : '&ndash;') + '</td>' : '') +
         '</tr>';
       });
     });
