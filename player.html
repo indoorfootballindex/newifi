@@ -352,11 +352,33 @@
 
     var awardsHtml = '';
     if (awards && awards.length){
-      var sortedAwards = awards.slice().sort(function(a,b){ return b.year - a.year || (b.week||0) - (a.week||0); });
-      var rowsHtml = sortedAwards.map(function(a){
-        var weekLabel = a.week ? ' &middot; Week ' + a.week : '';
+      // group repeated weekly awards (same award + year + team) into one row
+      // listing every week, instead of a separate row per week
+      var grouped = {};
+      var singles = [];
+      awards.forEach(function(a){
+        if (a.week){
+          var key = a.award + '||' + a.year + '||' + a.team;
+          if (!grouped[key]) grouped[key] = { award: a.award, year: a.year, league: a.league, team: a.team, weeks: [] };
+          grouped[key].weeks.push(a.week);
+        } else {
+          singles.push(a);
+        }
+      });
+      var combined = Object.keys(grouped).map(function(k){ return grouped[k]; }).concat(singles);
+      combined.sort(function(a,b){ return a.year - b.year; });
+
+      var rowsHtml = combined.map(function(a){
+        var weekLabel = '';
+        if (a.weeks){
+          var sortedWeeks = a.weeks.slice().sort(function(x,y){ return x-y; });
+          weekLabel = ' &middot; Week' + (sortedWeeks.length>1?'s':'') + ' ' + sortedWeeks.join(', ');
+        } else if (a.week){
+          weekLabel = ' &middot; Week ' + a.week;
+        }
+        var teamLabel = a.team ? ' &middot; ' + a.team : '';
         return '<div class="award-row">' +
-          '<div><div class="name">' + a.award + '</div><div class="meta">' + a.league + weekLabel + '</div></div>' +
+          '<div><div class="name">' + a.award + '</div><div class="meta">' + a.league + teamLabel + weekLabel + '</div></div>' +
           '<div class="year">' + a.year + '</div>' +
         '</div>';
       }).join('');
