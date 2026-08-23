@@ -275,7 +275,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   .topbar .site{{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}}
   .topbar .site strong{{color:var(--chalk); font-weight:600;}}
   .topbar .site .crumb{{color:var(--steel);}}
-  .nav-desktop{{display:flex; gap:22px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}}
+  .nav-desktop{{display:flex; gap:15px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}}
   .nav-desktop a:hover{{color:var(--chalk);}}
   .hamburger-btn{{display:none; background:none; border:none; color:var(--chalk); font-size:20px; line-height:1; cursor:pointer; padding:2px 4px; flex-shrink:0;}}
   .mobile-menu{{display:none; flex-direction:column; background:var(--card); border-bottom:1px solid var(--card-line); padding:6px 24px 14px;}}
