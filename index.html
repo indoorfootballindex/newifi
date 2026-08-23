@@ -49,7 +49,7 @@
   .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
   .topbar .site strong{color:var(--chalk); font-weight:600;}
   .topbar .site .crumb{color:var(--steel);}
-  .nav-desktop{display:flex; gap:22px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
+  .nav-desktop{display:flex; gap:15px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
   .nav-desktop a:hover{color:var(--chalk);}
   .hamburger-btn{display:none; background:none; border:none; color:var(--chalk); font-size:20px; line-height:1; cursor:pointer; padding:2px 4px; flex-shrink:0;}
   .mobile-menu{display:none; flex-direction:column; background:var(--card); border-bottom:1px solid var(--card-line); padding:6px 24px 14px;}
@@ -347,26 +347,29 @@
     <p>Franchise histories, record books, and box scores for indoor and arena football &mdash; built from the ground up, one team at a time.</p>
     <a class="cta" href="teams.html">Browse teams &rarr;</a>
   </div>
-  <div class="hero-slideshow" id="heroSlideshow">
-    <img src="images/IFLChampionship26.jpg" alt="" class="active">
-    <img src="images/MMNK26.JPG" alt="">
-    <img src="images/IFLCup26.jpg" alt="">
-    <img src="images/FishersGB26.jpg" alt="">
-    <img src="images/PuebolSCB26.jpg" alt="">
-    <img src="images/IFLChampionship25.jpg" alt="">
-  </div>
+  <div class="hero-slideshow" id="heroSlideshow"></div>
 </header>
 
 <script>
   (function(){
-    var slides = document.querySelectorAll('#heroSlideshow img');
-    if (!slides.length) return;
-    var i = 0;
-    setInterval(function(){
-      slides[i].classList.remove('active');
-      i = (i + 1) % slides.length;
-      slides[i].classList.add('active');
-    }, 5000);
+    var container = document.getElementById('heroSlideshow');
+    fetch('hero-images.json')
+      .then(function(r){ return r.json(); })
+      .then(function(photos){
+        if (!photos || !photos.length) return;
+        container.innerHTML = photos.map(function(src, i){
+          return '<img src="' + src + '" alt="" class="' + (i === 0 ? 'active' : '') + '">';
+        }).join('');
+        var slides = container.querySelectorAll('img');
+        if (slides.length < 2) return;
+        var i = 0;
+        setInterval(function(){
+          slides[i].classList.remove('active');
+          i = (i + 1) % slides.length;
+          slides[i].classList.add('active');
+        }, 5000);
+      })
+      .catch(function(){ /* no hero-images.json yet — slideshow just stays empty */ });
   })();
 </script>
 

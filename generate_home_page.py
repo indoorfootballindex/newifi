@@ -290,7 +290,26 @@ TEMPLATE = r"""<!DOCTYPE html>
     .topbar .site .crumb{{display:none;}}
   }}
 
-  .hero{{max-width:1160px; margin:0 auto; padding:64px 24px 44px;}}
+  .hero{{
+    max-width:1400px; margin:0 auto; padding:64px 24px 60px;
+    display:flex; align-items:center; gap:40px; justify-content:space-between; flex-wrap:wrap;
+  }}
+  .hero-text{{max-width:620px; flex-shrink:0;}}
+  .hero-slideshow{{
+    position:relative; flex:1 1 420px; min-width:320px; max-width:640px; aspect-ratio:4/3;
+    border-radius:14px; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,0.6);
+    border:1px solid var(--card-line); display:none;
+  }}
+  @media (min-width:900px){{ .hero-slideshow{{display:block;}} }}
+  .hero-slideshow img{{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    opacity:0; transition:opacity 1.2s ease;
+  }}
+  .hero-slideshow img.active{{opacity:1;}}
+  .hero-slideshow::after{{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(to top, rgba(0,0,0,0.35), transparent 40%);
+  }}
   .hero .eyebrow{{
     font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-green);
     font-weight:600; margin:0 0 14px;
@@ -480,11 +499,37 @@ TEMPLATE = r"""<!DOCTYPE html>
 
 {search_js}
 <header class="hero">
-  <p class="eyebrow">Indoor &amp; arena football, archived</p>
-  <h1 class="display">Every team.<br>Every season.<br>One index.</h1>
-  <p>Franchise histories, record books, and box scores for indoor and arena football &mdash; built from the ground up, one team at a time.</p>
-  <a class="cta" href="teams.html">Browse teams &rarr;</a>
+  <div class="hero-text">
+    <p class="eyebrow">Indoor &amp; arena football, archived</p>
+    <h1 class="display">Every team.<br>Every season.<br>One index.</h1>
+    <p>Franchise histories, record books, and box scores for indoor and arena football &mdash; built from the ground up, one team at a time.</p>
+    <a class="cta" href="teams.html">Browse teams &rarr;</a>
+  </div>
+  <div class="hero-slideshow" id="heroSlideshow"></div>
 </header>
+
+<script>
+  (function(){{
+    var container = document.getElementById('heroSlideshow');
+    fetch('hero-images.json')
+      .then(function(r){{ return r.json(); }})
+      .then(function(photos){{
+        if (!photos || !photos.length) return;
+        container.innerHTML = photos.map(function(src, i){{
+          return '<img src="' + src + '" alt="" class="' + (i === 0 ? 'active' : '') + '">';
+        }}).join('');
+        var slides = container.querySelectorAll('img');
+        if (slides.length < 2) return;
+        var i = 0;
+        setInterval(function(){{
+          slides[i].classList.remove('active');
+          i = (i + 1) % slides.length;
+          slides[i].classList.add('active');
+        }}, 5000);
+      }})
+      .catch(function(){{ /* no hero-images.json yet — slideshow just stays empty */ }});
+  }})();
+</script>
 
 <div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1160 14"><line x1="0" y1="7" x2="1160" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
 
