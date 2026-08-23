@@ -12,7 +12,7 @@
   :root{
     --arena-black:#111316;
     --arena-black-2:#1a1d21;
-    --crimson:#D4263A;
+    --accent-green:#19FF00;
     --amber:#E8A33D;
     --turf:#3C6E47;
     --chalk:#F2EFE6;
@@ -45,7 +45,7 @@
     position:sticky; top:0; z-index:100;
   }
   .topbar-inner{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}
-  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap;}
+  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
   .topbar .site strong{color:var(--chalk); font-weight:600;}
   .topbar .site .crumb{color:var(--steel);}
   .nav-desktop{display:flex; gap:22px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
@@ -63,15 +63,34 @@
     .topbar .site .crumb{display:none;}
   }
 
-  .hero{max-width:1160px; margin:0 auto; padding:64px 24px 44px;}
+  .hero{
+    max-width:1400px; margin:0 auto; padding:64px 24px 60px;
+    display:flex; align-items:center; gap:40px; justify-content:space-between; flex-wrap:wrap;
+  }
+  .hero-text{max-width:620px; flex-shrink:0;}
+  .hero-slideshow{
+    position:relative; flex:1 1 420px; min-width:320px; max-width:640px; aspect-ratio:4/3;
+    border-radius:14px; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,0.6);
+    border:1px solid var(--card-line); display:none;
+  }
+  @media (min-width:900px){ .hero-slideshow{display:block;} }
+  .hero-slideshow img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    opacity:0; transition:opacity 1.2s ease;
+  }
+  .hero-slideshow img.active{opacity:1;}
+  .hero-slideshow::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(to top, rgba(0,0,0,0.35), transparent 40%);
+  }
   .hero .eyebrow{
-    font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--crimson);
+    font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-green);
     font-weight:600; margin:0 0 14px;
   }
   .hero h1{font-size:clamp(44px,7vw,84px); line-height:0.92; margin:0 0 18px; color:var(--chalk);}
   .hero p{font-size:16px; color:var(--steel); max-width:560px; line-height:1.7; margin:0 0 26px;}
   .hero .cta{
-    display:inline-flex; align-items:center; gap:8px; background:var(--crimson); color:var(--chalk);
+    display:inline-flex; align-items:center; gap:8px; background:var(--accent-green); color:#072237;
     font-size:14px; font-weight:600; padding:13px 22px; border-radius:8px;
   }
   .hero .cta:hover{background:#b81f31;}
@@ -119,9 +138,9 @@
     background:var(--card); border:1px solid var(--card-line); border-radius:10px;
     padding:22px; display:flex; flex-direction:column; gap:10px; transition:border-color .15s;
   }
-  .news-card:hover{border-color:var(--crimson);}
+  .news-card:hover{border-color:var(--accent-green);}
   .news-card.feature{grid-row:span 2; padding:28px;}
-  .news-card .kicker{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--crimson); font-weight:600;}
+  .news-card .kicker{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent-green); font-weight:600;}
   .news-card h3{font-size:18px; margin:0; color:var(--chalk); line-height:1.35;}
   .news-card.feature h3{font-size:26px;}
   .news-card p{font-size:14px; color:var(--chalk-dim); line-height:1.65; margin:0; flex:1;}
@@ -153,7 +172,7 @@
     width:100%; background:var(--card); border:1px solid var(--card-line); border-radius:10px;
     color:var(--chalk); padding:15px 44px 15px 44px; font-size:16px; font-family:'Inter',sans-serif;
   }
-  .search-panel input:focus{outline:1px solid var(--crimson); border-color:var(--crimson);}
+  .search-panel input:focus{outline:1px solid var(--accent-green); border-color:var(--accent-green);}
   .search-panel input::placeholder{color:var(--steel);}
   .search-panel .icon{position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--steel); font-size:16px;}
   .search-panel .close-btn{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--steel); font-size:20px; cursor:pointer; padding:4px;}
@@ -186,14 +205,24 @@
     .mobile-search-bar .icon{position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--steel); font-size:12px;}
     .mobile-search-bar .search-results{position:absolute; top:calc(100% + 6px); left:0; right:0; width:auto; margin:0; max-height:50vh; z-index:250;}
   }
-  ::selection{background:var(--crimson); color:var(--chalk);}
+  ::selection{background:var(--accent-green); color:#072237;}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a></div>
+    <div class="site"><a href="index.html"><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg" style="width:34px; height:auto;">
+        <path d="M10 28 Q26 6 50 6 Q74 6 90 28 Q74 50 50 50 Q26 50 10 28 Z" fill="#E1E5E8"/>
+        <path d="M10 28 Q17 19 17 28 Q17 37 10 28 Z" fill="#9D9D9D"/>
+        <path d="M90 28 Q83 19 83 28 Q83 37 90 28 Z" fill="#9D9D9D"/>
+        <line x1="33" y1="28" x2="67" y2="28" stroke="#072237" stroke-width="3" stroke-linecap="round"/>
+        <line x1="39" y1="21" x2="39" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="45" y1="21" x2="45" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="50" y1="21" x2="50" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="55" y1="21" x2="55" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="61" y1="21" x2="61" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+      </svg></a></div>
     <div class="mobile-search-bar">
       <span class="icon">&#128269;</span>
       <input type="text" id="mobileSearchInput" placeholder="Search&hellip;">
@@ -321,11 +350,34 @@
 })();
 </script>
 <header class="hero">
-  <p class="eyebrow">Indoor &amp; arena football, archived</p>
-  <h1 class="display">Every team.<br>Every season.<br>One index.</h1>
-  <p>Franchise histories, record books, and box scores for indoor and arena football &mdash; built from the ground up, one team at a time.</p>
-  <a class="cta" href="teams.html">Browse teams &rarr;</a>
+  <div class="hero-text">
+    <p class="eyebrow">Indoor &amp; arena football, archived</p>
+    <h1 class="display">Every team.<br>Every season.<br>One index.</h1>
+    <p>Franchise histories, record books, and box scores for indoor and arena football &mdash; built from the ground up, one team at a time.</p>
+    <a class="cta" href="teams.html">Browse teams &rarr;</a>
+  </div>
+  <div class="hero-slideshow" id="heroSlideshow">
+    <img src="images/IFLChampionship26.jpg" alt="" class="active">
+    <img src="images/MMNK26.JPG" alt="">
+    <img src="images/IFLCup26.jpg" alt="">
+    <img src="images/FishersGB26.jpg" alt="">
+    <img src="images/PuebolSCB26.jpg" alt="">
+    <img src="images/IFLChampionship25.jpg" alt="">
+  </div>
 </header>
+
+<script>
+  (function(){
+    var slides = document.querySelectorAll('#heroSlideshow img');
+    if (!slides.length) return;
+    var i = 0;
+    setInterval(function(){
+      slides[i].classList.remove('active');
+      i = (i + 1) % slides.length;
+      slides[i].classList.add('active');
+    }, 5000);
+  })();
+</script>
 
 <div class="hashes"><svg preserveAspectRatio="none" viewBox="0 0 1160 14"><line x1="0" y1="7" x2="1160" y2="7" stroke="#2a2d31" stroke-width="1"/></svg></div>
 
@@ -335,18 +387,6 @@
     <p class="note">The next 10 games across every league in the archive.</p>
   </div>
   <div class="game-grid">
-    <div class="game-card">
-      <div class="game-card-head"><span class="date">Aug 23, 2026 &middot; Sunday</span><span class="league">8MIFL</span></div>
-      <div class="game-status live-time">TBD</div>
-      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Louisiana Tigers</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"><img src="https://i.imgur.com/uFPgmqp.jpeg" alt="Lewisville Savage logo" onerror="this.style.display='none'"></div><div class="name">Lewisville Savage</div></div></div>
-      <div class="game-card-foot"><span></span><span class="week-label">Week 3</span></div>
-    </div>
-    <div class="game-card">
-      <div class="game-card-head"><span class="date">Aug 23, 2026 &middot; Sunday</span><span class="league">8MIFL</span></div>
-      <div class="game-status live-time">TBD</div>
-      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Dallas Dawgs</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Dallas MBG Kings</div></div></div>
-      <div class="game-card-foot"><span></span><span class="week-label">Week 3</span></div>
-    </div>
     <div class="game-card">
       <div class="game-card-head"><span class="date">Sep 26, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
       <div class="game-status live-time">TBD</div>
@@ -393,6 +433,18 @@
       <div class="game-card-head"><span class="date">Oct 3, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
       <div class="game-status live-time">TBD</div>
       <div class="matchup"><div class="team-block"><div class="logo"><img src="https://greatlakesarenafootball.com/wp-content/uploads/2024/02/Blue-and-White-Circle-Surfing-Club-Logo-10-300x300.png" alt="Michigan Avengerz logo" onerror="this.style.display='none'"></div><div class="name">Michigan Avengerz</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Motor City Tigers</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
+    </div>
+    <div class="game-card">
+      <div class="game-card-head"><span class="date">Oct 3, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"><img src="https://i.imgur.com/wQ6PXPx.png" alt="Ohio Blitz logo" onerror="this.style.display='none'"></div><div class="name">Ohio Blitz</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"></div><div class="name">Ohio Elite</div></div></div>
+      <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
+    </div>
+    <div class="game-card">
+      <div class="game-card-head"><span class="date">Oct 3, 2026 &middot; Saturday</span><span class="league">WIF</span></div>
+      <div class="game-status live-time">TBD</div>
+      <div class="matchup"><div class="team-block"><div class="logo"></div><div class="name">Hudson Hurricanes</div></div><span class="vs-sep">@</span><div class="team-block"><div class="logo"><img src="https://i.imgur.com/Mwv8A77.png" alt="Ohio Boom logo" onerror="this.style.display='none'"></div><div class="name">Ohio Boom</div></div></div>
       <div class="game-card-foot"><span></span><span class="week-label">Week 2</span></div>
     </div>
   </div>
@@ -474,26 +526,20 @@
 <section id="news">
   <div class="section-head">
     <h2 class="display">News</h2>
-    <p class="note"><a href="news.html" style="color:var(--crimson); text-decoration:underline;">See all news &rarr;</a></p>
+    <p class="note"><a href="news.html" style="color:var(--accent-green); text-decoration:underline;">See all news &rarr;</a></p>
   </div>
   <div class="news-grid">
-    <a class="news-card feature" href="article.html?article=the-new-look-of-the-indoor-football-index">
-      <div class="kicker">Site Update</div>
-      <h3>The New Look of the Indoor Football Index</h3>
-      <p>A New Look for the Indoor Football Index The Indoor Football Index just got a full overhaul. Every team, player, league, and game in the archive now has a real page — built from the same data you already track, not a static site that goes stale the moment a se…</p>
-      <div class="date">2026-08-22</div>
-    </a>
-    <a class="news-card" href="article.html?article=four-teams-set-to-join-the-ifl-for-2027">
-      <div class="kicker">League News</div>
-      <h3>Four Teams Set to Join the IFL for 2027</h3>
-      <p>Four Teams Set to Join the IFL for 2027 The IFL is set to add four teams for the 2027 season — three brand-new expansion franchises and one club jumping over fr…</p>
-      <div class="date">2026-08-22</div>
-    </a>
-    <a class="news-card" href="article.html?article=arizona-wins-it-all-in-a-wild-2026-ifl-season">
+    <a class="news-card feature" href="article.html?article=strike-force-s-historic-season">
       <div class="kicker">Season Recap</div>
-      <h3>Arizona Wins It All in a Wild 2026 IFL Season</h3>
-      <p>Arizona Wins It All in a Wild 2026 IFL Season The 2026 IFL season delivered one of the most competitive playoff races in years, and it ended with the Arizona Ra…</p>
-      <div class="date">2026-08-22</div>
+      <h3>Strike Force's Historic Season</h3>
+      <p>This heading is ignored by our parser (title comes from filename) San Diego closed the 2026 regular season 13-3 , the best record in franchise history, and claimed the #1 seed in the West. Key moments from the run: Beat Tucson in Round 1 Fell to Arizona in the…</p>
+      <div class="date">2026-08-21</div>
+    </a>
+    <a class="news-card" href="article.html?article=welcome-to-the-new-indoor-football-index">
+      
+      <h3>Welcome to the new Indoor Football Index</h3>
+      <p>Franchise histories, record books, and full box scores are going up team by team. More franchises, more seasons, and league-wide stats are on the way.</p>
+      <div class="date">2026-08-21</div>
     </a>
   </div>
 </section>
