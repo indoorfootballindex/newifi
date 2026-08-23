@@ -180,17 +180,7 @@
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="site"><a href="index.html"><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg" style="width:34px; height:auto;">
-        <path d="M10 28 Q26 6 50 6 Q74 6 90 28 Q74 50 50 50 Q26 50 10 28 Z" fill="#E1E5E8"/>
-        <path d="M10 28 Q17 19 17 28 Q17 37 10 28 Z" fill="#9D9D9D"/>
-        <path d="M90 28 Q83 19 83 28 Q83 37 90 28 Z" fill="#9D9D9D"/>
-        <line x1="33" y1="28" x2="67" y2="28" stroke="#072237" stroke-width="3" stroke-linecap="round"/>
-        <line x1="39" y1="21" x2="39" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="45" y1="21" x2="45" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="50" y1="21" x2="50" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="55" y1="21" x2="55" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="61" y1="21" x2="61" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
-      </svg></a><span class="crumb"> / Records</span></div>
+    <div class="site"><a href="index.html"><img src="images/logo.png" alt="Indoor Football Index" style="height:48px; width:auto; display:block;"></a><span class="crumb"> / Records</span></div>
     <div class="mobile-search-bar">
       <span class="icon">&#128269;</span>
       <input type="text" id="mobileSearchInput" placeholder="Search&hellip;">
@@ -409,6 +399,41 @@
   function playerSlug(name){
     return String(name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
   }
+  var TEAMS = [];
+  var teamsByName = {};
+
+  // Known two-word mascots I've directly confirmed in the real data, where
+  // the team's own locationHistory doesn't cleanly match the name (e.g.
+  // Vegas Knight Hawks' locationHistory says "Henderson", not "Vegas").
+  // Add to this list if another team shows up truncated wrong.
+  var KNOWN_MULTIWORD_MASCOTS = [
+    'Strike Force', 'Knight Hawks', 'Sugar Skulls', 'Sea Wolves',
+    'War Eagles', 'Wolf Pack', 'Fire Ants', 'Steel Panthers'
+  ];
+
+  function mascotName(fullName){
+    if (!fullName) return fullName;
+    // 1. Try stripping the real location from teams.json's locationHistory
+    var team = teamsByName[fullName];
+    if (team && team.locationHistory){
+      var entries = team.locationHistory.split(/\),\s*/);
+      for (var i = 0; i < entries.length; i++){
+        var city = entries[i].split(',')[0].trim();
+        if (city && fullName.toLowerCase().indexOf(city.toLowerCase()) === 0){
+          var stripped = fullName.slice(city.length).trim();
+          if (stripped) return stripped;
+        }
+      }
+    }
+    // 2. Known two-word mascots that location-matching won't catch
+    for (var j = 0; j < KNOWN_MULTIWORD_MASCOTS.length; j++){
+      if (fullName.indexOf(KNOWN_MULTIWORD_MASCOTS[j]) !== -1) return KNOWN_MULTIWORD_MASCOTS[j];
+    }
+    // 3. Fall back to just the last word
+    var parts = fullName.trim().split(/\s+/);
+    return parts[parts.length - 1];
+  }
+
   function teamSlug(name){
     return String(name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
   }
@@ -419,7 +444,7 @@
       if (!qualifierValue(cat, r)) return null;
       var v = categoryValue(cat, r);
       if (v == null) return null;
-      return {name:r.name, slug:playerSlug(r.name), team:r.team, teamSlug:teamSlug(r.team), season:r.Season, league:r.League, value:v};
+      return {name:r.name, slug:playerSlug(r.name), team:mascotName(r.team), teamSlug:teamSlug(r.team), season:r.Season, league:r.League, value:v};
     }).filter(Boolean);
     results.sort(function(a,b){ return cat.direction === 'asc' ? a.value - b.value : b.value - a.value; });
     return results.slice(0, 10);
@@ -430,15 +455,15 @@
     var byPlayer = {};
     rows.forEach(function(r){
       var key = playerSlug(r.name);
-      if (!byPlayer[key]) byPlayer[key] = {name:r.name, slug:key, team:r.team, teams:{}, firstYear:r.Season, lastYear:r.Season, totals:{}};
+      if (!byPlayer[key]) byPlayer[key] = {name:r.name, slug:key, team:r.team, teamOrder:[], teams:{}, firstYear:r.Season, lastYear:r.Season, totals:{}};
       var p = byPlayer[key];
-      p.teams[r.team] = true;
+      if (!p.teams[r.team]){ p.teams[r.team] = true; p.teamOrder.push(r.team); }
       if (r.Season < p.firstYear) p.firstYear = r.Season;
       if (r.Season > p.lastYear) p.lastYear = r.Season;
       Object.keys(r).forEach(function(k){
         if (typeof r[k] === 'number'){ p.totals[k] = (p.totals[k] || 0) + r[k]; }
       });
-      // keep the most recent team as the display team
+      // keep the most recent team first in display order
       if (r.Season >= p.lastYear) p.team = r.team;
     });
 
@@ -447,8 +472,9 @@
       if (!qualifierValue(cat, p.totals)) return null;
       var v = categoryValue(cat, p.totals);
       if (v == null) return null;
-      var teamCount = Object.keys(p.teams).length;
-      var teamLabel = teamCount > 1 ? p.team + ' (+' + (teamCount-1) + ')' : p.team;
+      // most recent team first, then every other team they played for
+      var orderedTeams = [p.team].concat(p.teamOrder.filter(function(t){ return t !== p.team; }));
+      var teamLabel = orderedTeams.map(mascotName).join(', ');
       return {name:p.name, slug:p.slug, team:teamLabel, teamSlug:teamSlug(p.team), span: p.firstYear + '\u2013' + p.lastYear, value:v};
     }).filter(Boolean);
     results.sort(function(a,b){ return cat.direction === 'asc' ? a.value - b.value : b.value - a.value; });
@@ -506,10 +532,15 @@
     }).join('');
   }
 
-  fetch('players.json')
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      PLAYERS = data;
+  Promise.all([
+    fetch('players.json').then(function(r){ return r.json(); }),
+    fetch('teams.json').then(function(r){ return r.json(); }).catch(function(){ return []; })
+  ])
+    .then(function(results){
+      PLAYERS = results[0];
+      TEAMS = results[1];
+      TEAMS.forEach(function(t){ teamsByName[t.name] = t; });
+
       var leagues = ['All Leagues'];
       PLAYERS.forEach(function(r){ if (r.League && leagues.indexOf(r.League) === -1) leagues.push(r.League); });
       leagues = [leagues[0]].concat(leagues.slice(1).sort());
@@ -533,7 +564,7 @@
     })
     .catch(function(err){
       document.getElementById('emptyState').style.display = 'block';
-      document.getElementById('emptyState').textContent = "Couldn't load players.json: " + err;
+      document.getElementById('emptyState').textContent = "Couldn't load records data: " + err;
     });
 </script>
 
