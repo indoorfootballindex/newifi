@@ -85,6 +85,14 @@
 
   .empty{padding:60px 24px; text-align:center; color:var(--steel);}
 
+  .pager{display:flex; justify-content:center; align-items:center; gap:14px; margin-top:20px; font-size:13px; color:var(--steel);}
+  .pager button{
+    background:var(--card); border:1px solid var(--card-line); color:var(--chalk); border-radius:6px;
+    padding:7px 14px; font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .pager button:disabled{opacity:0.35; cursor:default;}
+  .pager button:not(:disabled):hover{border-color:var(--crimson);}
+
   .submit-card{
     margin-top:32px; padding:24px; border:1px dashed var(--card-line); border-radius:12px;
     background:var(--card); text-align:center;
@@ -295,11 +303,12 @@
   <div class="result-count" id="result-count">Loading&hellip;</div>
   <div class="player-list" id="player-list"></div>
   <div class="empty" id="empty-state" style="display:none;">No players match that search.</div>
+  <div class="pager" id="pager" style="display:none;"></div>
 
   <div class="submit-card">
     <h3>Don't see yourself?</h3>
     <p>If you played and your stats aren't listed, you can submit them yourself.</p>
-    <a class="submit-btn" href="https://forms.gle/ADZvXrrXLaBJm1aaA" target="_blank" rel="noopener">Submit Your Stats</a>
+    <a class="submit-btn" href="PASTE_YOUR_GOOGLE_FORM_LINK_HERE" target="_blank" rel="noopener">Submit Your Stats</a>
   </div>
 </main>
 
@@ -331,17 +340,37 @@
     var list = document.getElementById('player-list');
     var countEl = document.getElementById('result-count');
     var emptyEl = document.getElementById('empty-state');
+    var pagerEl = document.getElementById('pager');
     var q = document.getElementById('search').value.trim().toLowerCase();
 
     var filtered = q ? PLAYERS.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; }) : PLAYERS;
-    var shown = filtered.slice(0, 200);
+    var pageSize = 50;
+    var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+    var start = (currentPage - 1) * pageSize;
+    var shown = filtered.slice(start, start + pageSize);
 
-    countEl.textContent = filtered.length + (filtered.length === 1 ? ' player' : ' players') +
-      (filtered.length > shown.length ? ' (showing first 200 — keep typing to narrow it down)' : '');
+    countEl.textContent = filtered.length + (filtered.length === 1 ? ' player' : ' players');
     list.style.display = filtered.length ? 'block' : 'none';
     emptyEl.style.display = filtered.length ? 'none' : 'block';
     list.innerHTML = shown.map(rowHtml).join('');
+
+    if (filtered.length > pageSize){
+      pagerEl.style.display = 'flex';
+      pagerEl.innerHTML =
+        '<button id="prevPageBtn" ' + (currentPage<=1?'disabled':'') + '>&larr; Prev</button>' +
+        '<span>Page ' + currentPage + ' of ' + totalPages + '</span>' +
+        '<button id="nextPageBtn" ' + (currentPage>=totalPages?'disabled':'') + '>Next &rarr;</button>';
+      document.getElementById('prevPageBtn').addEventListener('click', function(){ currentPage--; render(); window.scrollTo(0,0); });
+      document.getElementById('nextPageBtn').addEventListener('click', function(){ currentPage++; render(); window.scrollTo(0,0); });
+    } else {
+      pagerEl.style.display = 'none';
+      pagerEl.innerHTML = '';
+    }
   }
+
+  var currentPage = 1;
+  function onSearchChange(){ currentPage = 1; render(); }
 
   fetch('players.json')
     .then(function(r){ return r.json(); })
@@ -355,7 +384,7 @@
       });
       PLAYERS = Object.values(bySlug).sort(function(a,b){ return a.name.localeCompare(b.name); });
       document.getElementById('footer-count').textContent = PLAYERS.length + ' players';
-      document.getElementById('search').addEventListener('input', render);
+      document.getElementById('search').addEventListener('input', onSearchChange);
       render();
     })
     .catch(function(err){
