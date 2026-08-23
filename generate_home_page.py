@@ -238,7 +238,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   :root{{
     --arena-black:#111316;
     --arena-black-2:#1a1d21;
-    --crimson:#D4263A;
+    --accent-green:#19FF00;
     --amber:#E8A33D;
     --turf:#3C6E47;
     --chalk:#F2EFE6;
@@ -271,7 +271,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     position:sticky; top:0; z-index:100;
   }}
   .topbar-inner{{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}}
-  .topbar .site{{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap;}}
+  .topbar .site{{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}}
   .topbar .site strong{{color:var(--chalk); font-weight:600;}}
   .topbar .site .crumb{{color:var(--steel);}}
   .nav-desktop{{display:flex; gap:22px; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}}
@@ -291,13 +291,13 @@ TEMPLATE = r"""<!DOCTYPE html>
 
   .hero{{max-width:1160px; margin:0 auto; padding:64px 24px 44px;}}
   .hero .eyebrow{{
-    font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--crimson);
+    font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-green);
     font-weight:600; margin:0 0 14px;
   }}
   .hero h1{{font-size:clamp(44px,7vw,84px); line-height:0.92; margin:0 0 18px; color:var(--chalk);}}
   .hero p{{font-size:16px; color:var(--steel); max-width:560px; line-height:1.7; margin:0 0 26px;}}
   .hero .cta{{
-    display:inline-flex; align-items:center; gap:8px; background:var(--crimson); color:var(--chalk);
+    display:inline-flex; align-items:center; gap:8px; background:var(--accent-green); color:#072237;
     font-size:14px; font-weight:600; padding:13px 22px; border-radius:8px;
   }}
   .hero .cta:hover{{background:#b81f31;}}
@@ -345,9 +345,9 @@ TEMPLATE = r"""<!DOCTYPE html>
     background:var(--card); border:1px solid var(--card-line); border-radius:10px;
     padding:22px; display:flex; flex-direction:column; gap:10px; transition:border-color .15s;
   }}
-  .news-card:hover{{border-color:var(--crimson);}}
+  .news-card:hover{{border-color:var(--accent-green);}}
   .news-card.feature{{grid-row:span 2; padding:28px;}}
-  .news-card .kicker{{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--crimson); font-weight:600;}}
+  .news-card .kicker{{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent-green); font-weight:600;}}
   .news-card h3{{font-size:18px; margin:0; color:var(--chalk); line-height:1.35;}}
   .news-card.feature h3{{font-size:26px;}}
   .news-card p{{font-size:14px; color:var(--chalk-dim); line-height:1.65; margin:0; flex:1;}}
@@ -379,7 +379,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     width:100%; background:var(--card); border:1px solid var(--card-line); border-radius:10px;
     color:var(--chalk); padding:15px 44px 15px 44px; font-size:16px; font-family:'Inter',sans-serif;
   }}
-  .search-panel input:focus{{outline:1px solid var(--crimson); border-color:var(--crimson);}}
+  .search-panel input:focus{{outline:1px solid var(--accent-green); border-color:var(--accent-green);}}
   .search-panel input::placeholder{{color:var(--steel);}}
   .search-panel .icon{{position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--steel); font-size:16px;}}
   .search-panel .close-btn{{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--steel); font-size:20px; cursor:pointer; padding:4px;}}
@@ -412,14 +412,24 @@ TEMPLATE = r"""<!DOCTYPE html>
     .mobile-search-bar .icon{{position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--steel); font-size:12px;}}
     .mobile-search-bar .search-results{{position:absolute; top:calc(100% + 6px); left:0; right:0; width:auto; margin:0; max-height:50vh; z-index:250;}}
   }}
-  ::selection{{background:var(--crimson); color:var(--chalk);}}
+  ::selection{{background:var(--accent-green); color:#072237;}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a></div>
+    <div class="site"><a href="index.html"><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg" style="width:34px; height:auto;">
+        <path d="M10 28 Q26 6 50 6 Q74 6 90 28 Q74 50 50 50 Q26 50 10 28 Z" fill="#E1E5E8"/>
+        <path d="M10 28 Q17 19 17 28 Q17 37 10 28 Z" fill="#9D9D9D"/>
+        <path d="M90 28 Q83 19 83 28 Q83 37 90 28 Z" fill="#9D9D9D"/>
+        <line x1="33" y1="28" x2="67" y2="28" stroke="#072237" stroke-width="3" stroke-linecap="round"/>
+        <line x1="39" y1="21" x2="39" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="45" y1="21" x2="45" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="50" y1="21" x2="50" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="55" y1="21" x2="55" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="61" y1="21" x2="61" y2="35" stroke="#072237" stroke-width="2.5" stroke-linecap="round"/>
+      </svg></a></div>
     <div class="mobile-search-bar">
       <span class="icon">&#128269;</span>
       <input type="text" id="mobileSearchInput" placeholder="Search&hellip;">
@@ -510,7 +520,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section id="news">
   <div class="section-head">
     <h2 class="display">News</h2>
-    <p class="note"><a href="news.html" style="color:var(--crimson); text-decoration:underline;">See all news &rarr;</a></p>
+    <p class="note"><a href="news.html" style="color:var(--accent-green); text-decoration:underline;">See all news &rarr;</a></p>
   </div>
 {news_html}
 </section>
