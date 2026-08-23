@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stats — Indoor Football Index</title>
+<title>Records — Indoor Football Index</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -106,6 +106,7 @@
   td.left{text-align:left; font-family:'Inter',sans-serif;}
   td.name a{font-weight:600; color:var(--chalk);}
   td.name a:hover{color:var(--amber);}
+  td.value{color:var(--amber); font-weight:700; font-size:14px;}
   .award-star{color:var(--amber); font-size:12px; cursor:default; margin-left:2px;}
   .team{display:flex; align-items:center; gap:8px;}
   .team .logo{width:22px; height:22px; border-radius:4px; background:var(--arena-black-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;}
@@ -179,7 +180,7 @@
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a><span class="crumb"> / Stats</span></div>
+    <div class="site"><a href="index.html"><strong>Indoor Football Index</strong></a><span class="crumb"> / Records</span></div>
     <div class="mobile-search-bar">
       <span class="icon">&#128269;</span>
       <input type="text" id="mobileSearchInput" placeholder="Search&hellip;">
@@ -310,35 +311,21 @@
 
 <main>
   <div class="hero">
-    <h1 class="display">Stats</h1>
-    <p>League statistical leaders.</p>
+    <h1 class="display">Records</h1>
+    <p>All-time and single-season record books.</p>
   </div>
 
   <div class="controls-row">
-    <select class="unit-select" id="yearSelect"></select>
     <select class="unit-select" id="leagueSelect"></select>
-    <select class="unit-select" id="categorySelect"></select>
-    <div class="toggle-group" id="viewToggle">
-      <button data-view="overall" class="active">Overall</button>
-      <button data-view="conference">Conference</button>
+    <div class="toggle-group" id="modeToggle">
+      <button data-mode="season" class="active">Single Season</button>
+      <button data-mode="career">All-Time</button>
     </div>
-    <label class="checkbox-label">
-      <input type="checkbox" id="qualifyCheck" checked>
-      Qualifying players only
-    </label>
+    <select class="unit-select" id="recordCategorySelect"></select>
   </div>
-  <div class="controls-row">
-    <input type="text" class="search-input" id="searchInput" placeholder="Search player or team&hellip;">
-    <select class="unit-select" id="pageSizeSelect">
-      <option value="25">25 per page</option>
-      <option value="50">50 per page</option>
-      <option value="100">100 per page</option>
-    </select>
-  </div>
-  <div class="qualify-note" id="qualifyNote"></div>
 
   <div id="content"></div>
-  <div class="empty" id="emptyState" style="display:none;">No stats found for that year/league/category.</div>
+  <div class="empty" id="emptyState" style="display:none;">No qualifying records found for that league.</div>
 </main>
 
 <footer>
@@ -346,102 +333,41 @@
 </footer>
 
 <script>
-  var CATEGORIES = [
-    {
-      id: 'passing', title: 'Passing', trigger: ['P Att'], sortCol: 'Yds',
-      cols: [
-        {label:'GP', get:function(r){return r['GP'];}},
-        {label:'Comp', get:function(r){return r['P Comp'];}},
-        {label:'Att', get:function(r){return r['P Att'];}},
-        {label:'Pct', get:function(r){return pctNum(r['P Comp'], r['P Att']);}, isPct:true},
-        {label:'Yds', get:function(r){return r['P Yds'];}},
-        {label:'Y/G', get:function(r){return divNum(r['P Yds'], r['GP']);}},
-        {label:'Y/A', get:function(r){return divNum(r['P Yds'], r['P Att']);}},
-        {label:'TD', get:function(r){return r['P TD'];}},
-        {label:'Int', get:function(r){return r['P Int'];}}
-      ]
-    },
-    {
-      id: 'rushing', title: 'Rushing', trigger: ['Rush Att'], sortCol: 'Yds',
-      cols: [
-        {label:'GP', get:function(r){return r['GP'];}},
-        {label:'Car', get:function(r){return r['Rush Att'];}},
-        {label:'Yds', get:function(r){return r['Rush Yds'];}},
-        {label:'Avg', get:function(r){return divNum(r['Rush Yds'], r['Rush Att']);}},
-        {label:'Y/G', get:function(r){return divNum(r['Rush Yds'], r['GP']);}},
-        {label:'TD', get:function(r){return r['Rush TD'];}}
-      ]
-    },
-    {
-      id: 'receiving', title: 'Receiving', trigger: ['Rec'], sortCol: 'Yds',
-      cols: [
-        {label:'GP', get:function(r){return r['GP'];}},
-        {label:'Rec', get:function(r){return r['Rec'];}},
-        {label:'Yds', get:function(r){return r['Rec Yds'];}},
-        {label:'Avg', get:function(r){return divNum(r['Rec Yds'], r['Rec']);}},
-        {label:'Y/G', get:function(r){return divNum(r['Rec Yds'], r['GP']);}},
-        {label:'TD', get:function(r){return r['Rec TD'];}}
-      ]
-    },
-    {
-      id: 'returns', title: 'Kick Returns', trigger: ['KR'], sortCol: 'Yds',
-      cols: [
-        {label:'GP', get:function(r){return r['GP'];}},
-        {label:'KR', get:function(r){return r['KR'];}},
-        {label:'Yds', get:function(r){return r['KR Yds'];}},
-        {label:'Avg', get:function(r){return divNum(r['KR Yds'], r['KR']);}},
-        {label:'TD', get:function(r){return r['KR TD'];}}
-      ]
-    },
-    {
-      id: 'kicking', title: 'Kicking', trigger: ['FGA','XPA','Deuces','Decues'], sortCol: 'FGM',
-      cols: [
-        {label:'GP', get:function(r){return r['GP'];}},
-        {label:'FGM', get:function(r){return r['FGM'];}},
-        {label:'FGA', get:function(r){return r['FGA'];}},
-        {label:'FG%', get:function(r){return pctNum(r['FGM'], r['FGA']);}, isPct:true},
-        {label:'XPM', get:function(r){return r['XPM'];}},
-        {label:'XPA', get:function(r){return r['XPA'];}},
-        {label:'XP%', get:function(r){return pctNum(r['XPM'], r['XPA']);}, isPct:true},
-        {label:'Deuces', get:function(r){return r['Deuces'] != null ? r['Deuces'] : r['Decues'];}}
-      ]
-    },
-    {
-      id: 'defense', title: 'Defense', trigger: ['TotTkl','Sck','Def Int','PBU','FF','FR','Blk'], sortCol: 'Tkl',
-      cols: [
-        {label:'GP', get:function(r){return r['GP'];}},
-        {label:'Solo', get:function(r){return r['Tkl'];}},
-        {label:'Ast', get:function(r){return r['Ast'];}},
-        {label:'Tkl', get:function(r){return r['TotTkl'];}},
-        {label:'TFL', get:function(r){return r['TFL'];}},
-        {label:'Sck', get:function(r){return r['Sck'];}},
-        {label:'FF', get:function(r){return r['FF'];}},
-        {label:'FR', get:function(r){return r['FR'];}},
-        {label:'Int', get:function(r){return r['Def Int'];}},
-        {label:'PBU', get:function(r){return r['PBU'];}},
-        {label:'Blk', get:function(r){return r['Blk'];}}
-      ]
-    },
-    {
-      id: 'scoring', title: 'Scoring', trigger: ['Pts'], sortCol: 'Pts',
-      cols: [
-        {label:'GP', get:function(r){return r['GP'];}},
-        {label:'Pts', get:function(r){return r['Pts'];}},
-        {label:'Pts/G', get:function(r){return divNum(r['Pts'], r['GP']);}},
-        {label:'Rush', get:function(r){return r['Rush TD'];}},
-        {label:'Rec', get:function(r){return r['Rec TD'];}},
-        {label:'KR', get:function(r){return r['KR TD'];}},
-        {label:'FGM', get:function(r){return r['FGM'];}},
-        {label:'XPM', get:function(r){return r['XPM'];}},
-        {label:'Deuces', get:function(r){return r['Deuces'] != null ? r['Deuces'] : r['Decues'];}}
-      ]
-    }
+  // Each category computes either a single best season, or a career total,
+  // depending on the selected mode. "qualifier" is a minimum on a
+  // denominator field, applied at the season level in Season mode and to
+  // the career sum of that field in All-Time mode.
+  var RECORD_CATEGORIES = [
+    {group:'Passing', title:'Most Passes Attempted', stat:'P Att'},
+    {group:'Passing', title:'Most Passes Completed', stat:'P Comp'},
+    {group:'Passing', title:'Highest Completion %', num:'P Comp', den:'P Att', qualifier:{field:'P Att', min:200}, isPct:true},
+    {group:'Passing', title:'Most Passing Yards', stat:'P Yds'},
+    {group:'Passing', title:'Most Touchdown Passes', stat:'P TD'},
+    {group:'Passing', title:'Most Interceptions Thrown', stat:'P Int'},
+    {group:'Passing', title:'Fewest Interceptions', stat:'P Int', direction:'asc', qualifier:{field:'P Att', min:150}},
+    {group:'Rushing', title:'Most Rushing Attempts', stat:'Rush Att'},
+    {group:'Rushing', title:'Most Rushing Yards', stat:'Rush Yds'},
+    {group:'Rushing', title:'Highest Rushing Average', num:'Rush Yds', den:'Rush Att', qualifier:{field:'Rush Att', min:50}},
+    {group:'Rushing', title:'Most Rushing Touchdowns', stat:'Rush TD'},
+    {group:'Receiving', title:'Most Receptions', stat:'Rec'},
+    {group:'Receiving', title:'Most Receiving Yards', stat:'Rec Yds'},
+    {group:'Receiving', title:'Most Receiving Touchdowns', stat:'Rec TD'},
+    {group:'Receiving', title:'Highest Yards Per Catch', num:'Rec Yds', den:'Rec', qualifier:{field:'Rec', min:60}},
+    {group:'Returns', title:'Most Kickoff Returns', stat:'KR'},
+    {group:'Returns', title:'Most Kickoff Return Yards', stat:'KR Yds'},
+    {group:'Returns', title:'Highest Kickoff Return Average', num:'KR Yds', den:'KR', qualifier:{field:'KR', min:25}},
+    {group:'Scoring', title:'Most All-Purpose Yards', derived:function(t){ return (num(t['Rush Yds'])||0) + (num(t['Rec Yds'])||0) + (num(t['KR Yds'])||0); }},
+    {group:'Scoring', title:'Most Points Scored', stat:'Pts'},
+    {group:'Defense', title:'Most Tackles', stat:'TotTkl'},
+    {group:'Defense', title:'Most Sacks', stat:'Sck'},
+    {group:'Defense', title:'Most Interceptions', stat:'Def Int'},
+    {group:'Kicking', title:'Most Field Goals Attempted', stat:'FGA'},
+    {group:'Kicking', title:'Most Field Goals Made', stat:'FGM'},
+    {group:'Kicking', title:'Most Extra Points Made', stat:'XPM'},
+    {group:'Kicking', title:'Most Deuces Made', derived:function(t){ var v = num(t['Deuces']); return v != null ? v : num(t['Decues']); }}
   ];
 
-  var PLAYERS = [], TEAMS = [], AWARDS = [];
-  var teamGamesCache = {}; // "team||year" -> games played that season
-  var teamLogoCache = {};
-  var sortState = {};
+  var PLAYERS = [];
 
   function esc(s){
     var d = document.createElement('div');
@@ -449,12 +375,26 @@
     return d.innerHTML;
   }
   function num(v){ return (typeof v === 'number') ? v : null; }
-  function divNum(a,b){ a=num(a); b=num(b); if(!b) return null; return a/b; }
-  function pctNum(a,b){ a=num(a); b=num(b); if(!b) return null; return 100*a/b; }
-  function fmt(col, v){
+
+  function categoryValue(cat, row){
+    if (cat.derived) return cat.derived(row);
+    if (cat.num && cat.den){
+      var n = num(row[cat.num]), d = num(row[cat.den]);
+      if (!d) return null;
+      return cat.isPct ? (100*n/d) : (n/d);
+    }
+    return num(row[cat.stat]);
+  }
+  function qualifierValue(cat, row){
+    if (!cat.qualifier) return true;
+    var v = num(row[cat.qualifier.field]);
+    return v != null && v >= cat.qualifier.min;
+  }
+  function fmtValue(cat, v){
     if (v == null) return '&ndash;';
-    if (col.isPct) return v.toFixed(1) + '%';
-    return (v % 1 === 0) ? v.toLocaleString() : v.toFixed(1);
+    if (cat.isPct) return v.toFixed(1) + '%';
+    if (cat.num && cat.den) return v.toFixed(1);
+    return v.toLocaleString();
   }
   function playerSlug(name){
     return String(name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -463,233 +403,128 @@
     return String(name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
   }
 
-  function teamGamesPlayed(team, year){
-    var key = team + '||' + year;
-    if (key in teamGamesCache) return teamGamesCache[key];
-    var t = TEAMS.find(function(x){ return x.name === team; });
-    var val = (t && t.seasons && t.seasons[year] && t.seasons[year].games) ? t.seasons[year].games.length : null;
-    teamGamesCache[key] = val;
-    return val;
-  }
-  function teamLogo(team){
-    if (team in teamLogoCache) return teamLogoCache[team];
-    var t = TEAMS.find(function(x){ return x.name === team; });
-    var val = (t && t.logos && t.logos[0]) ? t.logos[0].url : null;
-    teamLogoCache[team] = val;
-    return val;
-  }
-  function teamConference(team, year){
-    var t = TEAMS.find(function(x){ return x.name === team; });
-    return (t && t.seasons && t.seasons[year]) ? (t.seasons[year].conference || 'League') : 'League';
+  function seasonRecords(cat, league){
+    var rows = PLAYERS.filter(function(r){ return league === 'All Leagues' || r.League === league; });
+    var results = rows.map(function(r){
+      if (!qualifierValue(cat, r)) return null;
+      var v = categoryValue(cat, r);
+      if (v == null) return null;
+      return {name:r.name, slug:playerSlug(r.name), team:r.team, teamSlug:teamSlug(r.team), season:r.Season, league:r.League, value:v};
+    }).filter(Boolean);
+    results.sort(function(a,b){ return cat.direction === 'asc' ? a.value - b.value : b.value - a.value; });
+    return results.slice(0, 10);
   }
 
-  var yearlyAwardsCache = null;
-  function yearlyAwardsFor(slug, year, league){
-    if (!yearlyAwardsCache){
-      yearlyAwardsCache = {};
-      AWARDS.forEach(function(a){
-        if (a.week || a.isCoachAward) return; // weekly and coach awards excluded — season-end player awards only
-        var key = a.slug + '||' + a.year + '||' + a.league;
-        if (!yearlyAwardsCache[key]) yearlyAwardsCache[key] = [];
-        yearlyAwardsCache[key].push(a.award);
+  function careerRecords(cat, league){
+    var rows = PLAYERS.filter(function(r){ return league === 'All Leagues' || r.League === league; });
+    var byPlayer = {};
+    rows.forEach(function(r){
+      var key = playerSlug(r.name);
+      if (!byPlayer[key]) byPlayer[key] = {name:r.name, slug:key, team:r.team, teams:{}, firstYear:r.Season, lastYear:r.Season, totals:{}};
+      var p = byPlayer[key];
+      p.teams[r.team] = true;
+      if (r.Season < p.firstYear) p.firstYear = r.Season;
+      if (r.Season > p.lastYear) p.lastYear = r.Season;
+      Object.keys(r).forEach(function(k){
+        if (typeof r[k] === 'number'){ p.totals[k] = (p.totals[k] || 0) + r[k]; }
       });
-    }
-    return yearlyAwardsCache[slug + '||' + year + '||' + league] || [];
-  }
-
-  function populateSelect(id, values, defaultVal){
-    var sel = document.getElementById(id);
-    sel.innerHTML = '';
-    values.forEach(function(v){
-      var opt = document.createElement('option');
-      opt.value = v; opt.textContent = v;
-      sel.appendChild(opt);
+      // keep the most recent team as the display team
+      if (r.Season >= p.lastYear) p.team = r.team;
     });
-    if (defaultVal !== undefined && values.indexOf(defaultVal) !== -1) sel.value = defaultVal;
+
+    var results = Object.keys(byPlayer).map(function(key){
+      var p = byPlayer[key];
+      if (!qualifierValue(cat, p.totals)) return null;
+      var v = categoryValue(cat, p.totals);
+      if (v == null) return null;
+      var teamCount = Object.keys(p.teams).length;
+      var teamLabel = teamCount > 1 ? p.team + ' (+' + (teamCount-1) + ')' : p.team;
+      return {name:p.name, slug:p.slug, team:teamLabel, teamSlug:teamSlug(p.team), span: p.firstYear + '\u2013' + p.lastYear, value:v};
+    }).filter(Boolean);
+    results.sort(function(a,b){ return cat.direction === 'asc' ? a.value - b.value : b.value - a.value; });
+    return results.slice(0, 10);
   }
-
-  function currentCategory(){
-    var id = document.getElementById('categorySelect').value;
-    return CATEGORIES.find(function(c){ return c.id === id; });
-  }
-
-  function computeRows(year, league, cat){
-    var rows = PLAYERS.filter(function(r){
-      return String(r.Season) === String(year) && r.League === league &&
-        cat.trigger.some(function(t){ return num(r[t]) != null; });
-    });
-    return rows.map(function(r){
-      var gp = teamGamesPlayed(r.team, year);
-      var qualifies = gp ? (num(r.GP) || 0) >= gp * 0.75 : true;
-      var slug = playerSlug(r.name);
-      return {
-        name: r.name, slug: slug, team: r.team, teamSlug: teamSlug(r.team),
-        conference: teamConference(r.team, year), qualifies: qualifies, raw: r,
-        awards: yearlyAwardsFor(slug, year, league)
-      };
-    });
-  }
-
-  function sortRows(rows, cat, sortLabel, dir){
-    var col = cat.cols.find(function(c){ return c.label === sortLabel; }) || cat.cols.find(function(c){ return c.label === cat.sortCol; });
-    return rows.slice().sort(function(a,b){
-      var av = col.get(a.raw), bv = col.get(b.raw);
-      av = av == null ? -Infinity : av; bv = bv == null ? -Infinity : bv;
-      return dir === 'asc' ? av - bv : bv - av;
-    });
-  }
-
-  function tableHtml(rows, cat, rankOffset){
-    var sortLabel = sortState.label || cat.sortCol;
-    var dir = sortState.dir || 'desc';
-    var header = '<th class="left">Rk</th><th class="left">Name</th><th class="left">Team</th>' +
-      cat.cols.map(function(c){
-        var sorted = c.label === sortLabel;
-        var arrow = sorted ? (dir === 'asc' ? '&#9650;' : '&#9660;') : '&#9660;';
-        return '<th class="' + (sorted?'sorted':'') + '" data-col="' + esc(c.label) + '">' + esc(c.label) + '<span class="arrow">' + arrow + '</span></th>';
-      }).join('');
-
-    var body = rows.map(function(r, i){
-      var cells = cat.cols.map(function(c){ return '<td>' + fmt(c, c.get(r.raw)) + '</td>'; }).join('');
-      var logo = teamLogo(r.team);
-      var logoHtml = logo ? '<img src="' + esc(logo) + '" alt="">' : '';
-      var starHtml = r.awards && r.awards.length
-        ? ' <span class="award-star" title="' + esc(r.awards.join(', ')) + '">&#9733;</span>'
-        : '';
-      return '<tr class="' + (r.qualifies ? '' : 'non-qualifying') + '">' +
-        '<td class="rank">' + (rankOffset + i + 1) + '</td>' +
-        '<td class="left name"><a href="player.html?player=' + esc(r.slug) + '" class="plain-link">' + esc(r.name) + '</a>' + starHtml + '</td>' +
-        '<td class="left"><div class="team"><span class="logo">' + logoHtml + '</span><a href="team.html?team=' + esc(r.teamSlug) + '" class="plain-link">' + esc(r.team) + '</a></div></td>' +
-        cells +
-      '</tr>';
-    }).join('');
-
-    return '<div class="stats-wrap"><table><thead><tr>' + header + '</tr></thead><tbody>' + body + '</tbody></table></div>';
-  }
-
-  var currentPage = 1;
 
   function render(){
-    var year = document.getElementById('yearSelect').value;
     var league = document.getElementById('leagueSelect').value;
-    var cat = currentCategory();
-    var view = document.querySelector('#viewToggle button.active').dataset.view;
-    var qualifyOnly = document.getElementById('qualifyCheck').checked;
-    var q = document.getElementById('searchInput').value.trim().toLowerCase();
-    var pageSize = parseInt(document.getElementById('pageSizeSelect').value, 10);
+    var mode = document.querySelector('#modeToggle button.active').dataset.mode;
+    var catIdx = document.getElementById('recordCategorySelect').value;
+    var cat = RECORD_CATEGORIES[catIdx];
 
-    var rows = computeRows(year, league, cat);
-    if (q){
-      rows = rows.filter(function(r){ return r.name.toLowerCase().indexOf(q)!==-1 || r.team.toLowerCase().indexOf(q)!==-1; });
-    }
-    if (qualifyOnly){
-      rows = rows.filter(function(r){ return r.qualifies; });
-    }
-
+    var results = mode === 'season' ? seasonRecords(cat, league) : careerRecords(cat, league);
     var content = document.getElementById('content');
     var empty = document.getElementById('emptyState');
-    document.getElementById('qualifyNote').textContent = 'Shaded rows represent players who do not qualify (played in under 75% of their team\u2019s games that season).';
 
-    if (!rows.length){
+    if (!results.length){
       content.innerHTML = '';
       empty.style.display = 'block';
       return;
     }
     empty.style.display = 'none';
 
-    if (view === 'conference'){
-      var byConf = {};
-      rows.forEach(function(r){
-        if (!byConf[r.conference]) byConf[r.conference] = [];
-        byConf[r.conference].push(r);
-      });
-      var confs = Object.keys(byConf).sort();
-      content.innerHTML = confs.map(function(conf){
-        var sorted = sortRows(byConf[conf], cat, sortState.label, sortState.dir);
-        var total = sorted.length;
-        var start = (currentPage-1)*pageSize;
-        var pageRows = sorted.slice(start, start+pageSize);
-        return '<div class="conf-block"><h3>' + esc(conf) + '</h3>' + tableHtml(pageRows, cat, start) + '</div>';
-      }).join('');
-    } else {
-      var sorted = sortRows(rows, cat, sortState.label, sortState.dir);
-      var total = sorted.length;
-      var start = (currentPage-1)*pageSize;
-      var pageRows = sorted.slice(start, start+pageSize);
-      var totalPages = Math.max(1, Math.ceil(total/pageSize));
-      content.innerHTML = tableHtml(pageRows, cat, start) +
-        '<div class="pagination"><span>' + total + ' players</span>' +
-        '<div class="pager"><button id="prevPage" ' + (currentPage<=1?'disabled':'') + '>&larr; Prev</button>' +
-        '<span>Page ' + currentPage + ' of ' + totalPages + '</span>' +
-        '<button id="nextPage" ' + (currentPage>=totalPages?'disabled':'') + '>Next &rarr;</button></div></div>';
-      var prevBtn = document.getElementById('prevPage');
-      var nextBtn = document.getElementById('nextPage');
-      if (prevBtn) prevBtn.addEventListener('click', function(){ currentPage--; render(); window.scrollTo(0,0); });
-      if (nextBtn) nextBtn.addEventListener('click', function(){ currentPage++; render(); window.scrollTo(0,0); });
-    }
+    var extraHeader = mode === 'season' ? '<th>Season</th><th>League</th>' : '<th>Career</th>';
+    var rowsHtml = results.map(function(r, i){
+      var extra = mode === 'season'
+        ? '<td>' + r.season + '</td><td>' + esc(r.league) + '</td>'
+        : '<td>' + r.span + '</td>';
+      return '<tr>' +
+        '<td class="rank">' + (i+1) + '</td>' +
+        '<td class="left name"><a href="player.html?player=' + esc(r.slug) + '" class="plain-link">' + esc(r.name) + '</a></td>' +
+        '<td class="left"><a href="team.html?team=' + esc(r.teamSlug) + '" class="plain-link">' + esc(r.team) + '</a></td>' +
+        extra +
+        '<td class="value">' + fmtValue(cat, r.value) + '</td>' +
+      '</tr>';
+    }).join('');
 
-    content.querySelectorAll('thead th[data-col]').forEach(function(th){
-      th.addEventListener('click', function(){
-        var col = th.dataset.col;
-        if (sortState.label === col){ sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc'; }
-        else { sortState.label = col; sortState.dir = 'desc'; }
-        currentPage = 1;
-        render();
-      });
-    });
+    content.innerHTML = '<div class="stats-wrap"><table><thead><tr>' +
+      '<th class="left">Rk</th><th class="left">Player</th><th class="left">Team</th>' + extraHeader + '<th>' + esc(cat.title) + '</th>' +
+      '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
   }
 
   function populateCategorySelect(){
-    var sel = document.getElementById('categorySelect');
-    sel.innerHTML = CATEGORIES.map(function(c){ return '<option value="' + c.id + '">' + c.title + '</option>'; }).join('');
-  }
-
-  function onFilterChange(){
-    currentPage = 1;
-    sortState = {};
-    render();
-  }
-
-  Promise.all([
-    fetch('players.json').then(function(r){ return r.json(); }),
-    fetch('teams.json').then(function(r){ return r.json(); }).catch(function(){ return []; }),
-    fetch('awards.json').then(function(r){ return r.json(); }).catch(function(){ return []; })
-  ]).then(function(results){
-    PLAYERS = results[0];
-    TEAMS = results[1];
-    AWARDS = results[2];
-
-    var years = [], leagues = [];
-    PLAYERS.forEach(function(r){
-      if (r.Season != null && years.indexOf(r.Season) === -1) years.push(r.Season);
-      if (r.League && leagues.indexOf(r.League) === -1) leagues.push(r.League);
+    var sel = document.getElementById('recordCategorySelect');
+    var byGroup = {};
+    var groupOrder = [];
+    RECORD_CATEGORIES.forEach(function(cat, i){
+      if (!byGroup[cat.group]){ byGroup[cat.group] = []; groupOrder.push(cat.group); }
+      byGroup[cat.group].push(i);
     });
-    years.sort(function(a,b){ return b-a; });
-    leagues.sort();
+    sel.innerHTML = groupOrder.map(function(g){
+      return '<optgroup label="' + g + '">' + byGroup[g].map(function(i){
+        return '<option value="' + i + '">' + RECORD_CATEGORIES[i].title + '</option>';
+      }).join('') + '</optgroup>';
+    }).join('');
+  }
 
-    populateSelect('yearSelect', years);
-    populateSelect('leagueSelect', leagues, leagues.indexOf('IFL')!==-1 ? 'IFL' : leagues[0]);
-    populateCategorySelect();
+  fetch('players.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      PLAYERS = data;
+      var leagues = ['All Leagues'];
+      PLAYERS.forEach(function(r){ if (r.League && leagues.indexOf(r.League) === -1) leagues.push(r.League); });
+      leagues = [leagues[0]].concat(leagues.slice(1).sort());
 
-    document.getElementById('yearSelect').addEventListener('change', onFilterChange);
-    document.getElementById('leagueSelect').addEventListener('change', onFilterChange);
-    document.getElementById('categorySelect').addEventListener('change', onFilterChange);
-    document.getElementById('qualifyCheck').addEventListener('change', onFilterChange);
-    document.getElementById('searchInput').addEventListener('input', onFilterChange);
-    document.getElementById('pageSizeSelect').addEventListener('change', onFilterChange);
-    document.querySelectorAll('#viewToggle button').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        document.querySelectorAll('#viewToggle button').forEach(function(b){ b.classList.remove('active'); });
-        btn.classList.add('active');
-        onFilterChange();
+      var leagueSel = document.getElementById('leagueSelect');
+      leagueSel.innerHTML = leagues.map(function(l){ return '<option value="' + esc(l) + '">' + esc(l) + '</option>'; }).join('');
+
+      populateCategorySelect();
+
+      leagueSel.addEventListener('change', render);
+      document.getElementById('recordCategorySelect').addEventListener('change', render);
+      document.querySelectorAll('#modeToggle button').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('#modeToggle button').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          render();
+        });
       });
-    });
 
-    render();
-  }).catch(function(err){
-    document.getElementById('emptyState').style.display = 'block';
-    document.getElementById('emptyState').textContent = "Couldn't load stats data: " + err;
-  });
+      render();
+    })
+    .catch(function(err){
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('emptyState').textContent = "Couldn't load players.json: " + err;
+    });
 </script>
 
 </body>
