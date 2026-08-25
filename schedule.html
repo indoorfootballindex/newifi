@@ -38,7 +38,7 @@
     position:sticky; top:0; z-index:100;
   }
   .topbar-inner{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}
-  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
+  .topbar .site{font-size:13px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
   .topbar .site strong{color:var(--chalk); font-weight:600;}
   .nav-desktop{display:flex; gap:15px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
   .nav-desktop a:hover{color:var(--chalk);}
@@ -390,6 +390,7 @@
 <script>
   var ALL_GAMES = [];
   var LOGO_MAP = {};
+  var LOGO_MAP_BY_YEAR = {};
   var PAGE_SIZE = 100;
   var currentPage = 1;
   var filtered = [];
@@ -405,12 +406,13 @@
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   }
 
-  function logoFor(name){
+  function logoFor(name, year){
+    if (year && LOGO_MAP_BY_YEAR[name + '|' + year]) return LOGO_MAP_BY_YEAR[name + '|' + year];
     return LOGO_MAP[name] || null;
   }
 
-  function teamBlock(name, score, otherScore, played){
-    var logo = logoFor(name);
+  function teamBlock(name, score, otherScore, played, year){
+    var logo = logoFor(name, year);
     var logoHtml = logo
       ? '<img src="' + esc(logo) + '" alt="' + esc(name) + ' logo" onerror="this.style.display=\'none\'">'
       : '';
@@ -438,7 +440,7 @@
     return '<div class="' + cardCls + '">' +
       '<div class="game-card-head"><span class="date">' + esc(fmtDate(g.d)) + (g.dow ? ' &middot; ' + esc(g.dow) : '') + '</span><span class="league">' + esc(g.lg||'') + '</span></div>' +
       statusHtml +
-      '<div class="matchup">' + teamBlock(g.a, g.as, g.hs, g.p) + '<span class="vs-sep">@</span>' + teamBlock(g.h, g.hs, g.as, g.p) + '</div>' +
+      '<div class="matchup">' + teamBlock(g.a, g.as, g.hs, g.p, g.d.slice(0,4)) + '<span class="vs-sep">@</span>' + teamBlock(g.h, g.hs, g.as, g.p, g.d.slice(0,4)) + '</div>' +
       '<div class="game-card-foot">' + watchHtml + '<span class="week-label">' + esc(weekLabel) + '</span></div>' +
     '</div>';
   }
@@ -519,6 +521,19 @@
       if (t.logos && t.logos.length && t.logos[0].url){
         LOGO_MAP[t.name] = t.logos[0].url;
       }
+      // Old games often use the team's name from that specific era (e.g.
+      // "Abilene Ruff Riders" instead of the current "Abilene Bombers"),
+      // and may have had a different logo then too. Build a name+year
+      // lookup from each season's own name/logo override so those old
+      // games still resolve to the right logo.
+      Object.keys(t.seasons || {}).forEach(function(y){
+        var s = t.seasons[y];
+        var effectiveName = s.name || t.name;
+        var effectiveLogo = s.logo || (t.logos && t.logos[0] && t.logos[0].url);
+        if (effectiveLogo){
+          LOGO_MAP_BY_YEAR[effectiveName + '|' + y] = effectiveLogo;
+        }
+      });
     });
 
     var leagues = [], years = [], weeks = [];
