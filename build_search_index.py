@@ -54,12 +54,23 @@ def build_teams(teams):
     for t in teams:
         meta = t.get("league") or ""
         aliases = []
+
+        # Historical names can come from either the All Teams tab's Name
+        # History field, or from a season-level name override sourced from
+        # SBS Teams (a rebrand that hasn't been added to Name History yet
+        # still shows up this way, which is how it actually is for most
+        # teams right now).
         if t.get("nameHistory"):
             for entry in t["nameHistory"].split(","):
-                # strip the trailing "(year-year)" part, keep just the name
                 historical_name = entry.split("(")[0].strip()
                 if historical_name and historical_name != t["name"] and historical_name not in aliases:
                     aliases.append(historical_name)
+
+        for season in (t.get("seasons") or {}).values():
+            season_name = season.get("name")
+            if season_name and season_name != t["name"] and season_name not in aliases:
+                aliases.append(season_name)
+
         entry = {"name": t["name"], "type": "Team", "href": f"team.html?team={t['slug']}", "meta": meta}
         if aliases:
             entry["aliases"] = aliases
