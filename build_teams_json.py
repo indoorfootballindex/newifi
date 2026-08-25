@@ -117,7 +117,7 @@ def load_all_teams_bio(wb):
             "slug": slug(name),
             "league": norm_league(esc_none(get(r, "League"))),
             "years": esc_none(get(r, "Years")),
-            "firstSeason": get(r, "First Season"),
+            "firstSeason": get(r, "Est.") or get(r, "First Season"),
             "regRecord": parse_record_cell(get(r, "Reg W-L-T")),
             "playoffRecord": parse_record_cell(get(r, "Playoff W-L")),
             "totalRecord": parse_record_cell(get(r, "Total W-L-T")),
