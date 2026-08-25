@@ -475,7 +475,10 @@
       if (v == null) return null;
       // most recent team first, then every other team they played for
       var orderedTeams = [p.team].concat(p.teamOrder.filter(function(t){ return t !== p.team; }));
-      var teamLabel = orderedTeams.map(mascotName).join(', ');
+      var mascotNames = orderedTeams.map(mascotName);
+      var teamLabel = mascotNames.length > 5
+        ? mascotNames.slice(0, 5).join(', ') + ', +' + (mascotNames.length - 5) + ' teams'
+        : mascotNames.join(', ');
       return {name:p.name, slug:p.slug, team:teamLabel, teamSlug:teamSlug(p.team), span: p.firstYear + '\u2013' + p.lastYear, value:v};
     }).filter(Boolean);
     results.sort(function(a,b){ return cat.direction === 'asc' ? a.value - b.value : b.value - a.value; });
