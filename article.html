@@ -31,14 +31,7 @@
   }
   .display{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em;}
   .mono{font-family:'IBM Plex Mono',monospace;}
-  a{color:inherit;}
-
-  .topbar{display:flex; align-items:center; justify-content:space-between; max-width:760px; margin:0 auto; padding:22px 24px 0;}
-  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel);}
-  .topbar .site strong{color:var(--chalk); font-weight:600;}
-  .topbar nav{display:flex; gap:20px; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--steel);}
-  .topbar nav a{text-decoration:none;}
-  .topbar nav a:hover{color:var(--chalk);}
+  a{color:inherit; text-decoration:none;}
 
   main{max-width:760px; margin:0 auto; padding:0 24px 60px;}
 
@@ -123,7 +116,7 @@
     position:sticky; top:0; z-index:100;
   }
   .topbar-inner{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}
-  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
+  .topbar .site{font-size:13px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
   .topbar .site strong{color:var(--chalk); font-weight:600;}
   .nav-desktop{display:flex; gap:15px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
   .nav-desktop a:hover{color:var(--chalk);}
@@ -261,8 +254,12 @@
     return d.innerHTML;
   }
   function resultRow(item){
+    var subtitleParts = [];
+    if (item.matchedAlias) subtitleParts.push('formerly ' + escSearch(item.matchedAlias));
+    if (item.meta) subtitleParts.push(escSearch(item.meta));
+    var subtitle = subtitleParts.length ? '<div class="sr-meta">' + subtitleParts.join(' &middot; ') + '</div>' : '';
     return '<a class="search-result-row" href="' + item.href + '">' +
-      '<div><div class="sr-name">' + escSearch(item.name) + '</div>' + (item.meta ? '<div class="sr-meta">' + escSearch(item.meta) + '</div>' : '') + '</div>' +
+      '<div><div class="sr-name">' + escSearch(item.name) + '</div>' + subtitle + '</div>' +
       '<span class="sr-type">' + item.type + '</span>' +
     '</a>';
   }
@@ -270,7 +267,21 @@
     if (!query){ resultsEl.innerHTML=''; resultsEl.classList.remove('open'); return; }
     loadIndex().then(function(data){
       var q = query.toLowerCase();
-      var matches = data.filter(function(item){ return item.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 20);
+      var matches = [];
+      data.forEach(function(item){
+        if (item.name.toLowerCase().indexOf(q) !== -1){
+          matches.push(item);
+          return;
+        }
+        if (item.aliases){
+          var hit = item.aliases.find(function(a){ return a.toLowerCase().indexOf(q) !== -1; });
+          if (hit){
+            var copy = Object.assign({}, item, {matchedAlias: hit});
+            matches.push(copy);
+          }
+        }
+      });
+      matches = matches.slice(0, 20);
       if (!matches.length){
         resultsEl.innerHTML = '<div class="search-empty">No results for &ldquo;' + escSearch(query) + '&rdquo;</div>';
       } else {
@@ -282,6 +293,7 @@
       resultsEl.classList.add('open');
     });
   }
+
 
   var searchBtn = document.getElementById('searchBtn');
   var overlay = document.getElementById('searchOverlay');

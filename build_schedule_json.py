@@ -73,7 +73,11 @@ def main():
 
         week = r[idx["Week"]] if "Week" in idx else None
         week_low = str(week).lower()
-        is_championship = "championship" in week_low
+        # Different leagues have branded their title game differently over
+        # the years (ArenaBowl for the AFL, ArenaCup for af2, IFL Cup
+        # currently) rather than just calling it "Championship", so treat
+        # any of those patterns as a championship game.
+        is_championship = any(k in week_low for k in ("championship", "bowl", "cup"))
         is_playoff = is_championship or any(k in week_low for k in ("playoff", "semifinal", "quarterfinal"))
 
         games.append({

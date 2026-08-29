@@ -39,7 +39,8 @@ def build_players(players):
             by_slug[r["slug"]] = r
     out = []
     for slug, r in by_slug.items():
-        meta = r.get("Pos") or ""
+        pos = r.get("Pos")
+        meta = str(pos) if pos else ""
         if r.get("team"):
             meta = (meta + " \u00b7 " + r["team"]) if meta else r["team"]
         out.append({"name": r["name"], "type": "Player", "href": f"player.html?player={slug}", "meta": meta})
@@ -52,7 +53,28 @@ def build_teams(teams):
     out = []
     for t in teams:
         meta = t.get("league") or ""
-        out.append({"name": t["name"], "type": "Team", "href": f"team.html?team={t['slug']}", "meta": meta})
+        aliases = []
+
+        # Historical names can come from either the All Teams tab's Name
+        # History field, or from a season-level name override sourced from
+        # SBS Teams (a rebrand that hasn't been added to Name History yet
+        # still shows up this way, which is how it actually is for most
+        # teams right now).
+        if t.get("nameHistory"):
+            for entry in t["nameHistory"].split(","):
+                historical_name = entry.split("(")[0].strip()
+                if historical_name and historical_name != t["name"] and historical_name not in aliases:
+                    aliases.append(historical_name)
+
+        for season in (t.get("seasons") or {}).values():
+            season_name = season.get("name")
+            if season_name and season_name != t["name"] and season_name not in aliases:
+                aliases.append(season_name)
+
+        entry = {"name": t["name"], "type": "Team", "href": f"team.html?team={t['slug']}", "meta": meta}
+        if aliases:
+            entry["aliases"] = aliases
+        out.append(entry)
     return out
 
 
