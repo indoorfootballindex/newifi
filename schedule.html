@@ -391,6 +391,8 @@
   var ALL_GAMES = [];
   var LOGO_MAP = {};
   var LOGO_MAP_BY_YEAR = {};
+  var SLUG_MAP = {};
+  var SLUG_MAP_BY_YEAR = {};
   var PAGE_SIZE = 100;
   var currentPage = 1;
   var filtered = [];
@@ -411,8 +413,14 @@
     return LOGO_MAP[name] || null;
   }
 
+  function slugFor(name, year){
+    if (year && SLUG_MAP_BY_YEAR[name + '|' + year]) return SLUG_MAP_BY_YEAR[name + '|' + year];
+    return SLUG_MAP[name] || null;
+  }
+
   function teamBlock(name, score, otherScore, played, year){
     var logo = logoFor(name, year);
+    var slug = slugFor(name, year);
     var logoHtml = logo
       ? '<img src="' + esc(logo) + '" alt="' + esc(name) + ' logo" onerror="this.style.display=\'none\'">'
       : '';
@@ -421,7 +429,10 @@
       cls += (score > otherScore) ? ' winner' : ' loser';
     }
     var scoreHtml = played && score != null ? '<div class="score">' + score + '</div>' : '';
-    return '<div class="' + cls + '"><div class="logo">' + logoHtml + '</div><div class="name">' + esc(name) + '</div>' + scoreHtml + '</div>';
+    var inner = '<div class="logo">' + logoHtml + '</div><div class="name">' + esc(name) + '</div>' + scoreHtml;
+    return slug
+      ? '<a class="' + cls + '" href="team.html?team=' + esc(slug) + '">' + inner + '</a>'
+      : '<div class="' + cls + '">' + inner + '</div>';
   }
 
   function fmtDate(iso){
@@ -521,11 +532,14 @@
       if (t.logos && t.logos.length && t.logos[0].url){
         LOGO_MAP[t.name] = t.logos[0].url;
       }
+      SLUG_MAP[t.name] = t.slug;
       // Old games often use the team's name from that specific era (e.g.
       // "Abilene Ruff Riders" instead of the current "Abilene Bombers"),
       // and may have had a different logo then too. Build a name+year
       // lookup from each season's own name/logo override so those old
-      // games still resolve to the right logo.
+      // games still resolve to the right logo — and always link to the
+      // CURRENT franchise page, since that historical name's own page
+      // doesn't exist.
       Object.keys(t.seasons || {}).forEach(function(y){
         var s = t.seasons[y];
         var effectiveName = s.name || t.name;
@@ -533,6 +547,8 @@
         if (effectiveLogo){
           LOGO_MAP_BY_YEAR[effectiveName + '|' + y] = effectiveLogo;
         }
+        SLUG_MAP_BY_YEAR[effectiveName + '|' + y] = t.slug;
+        if (effectiveName !== t.name) SLUG_MAP[effectiveName] = t.slug;
       });
     });
 

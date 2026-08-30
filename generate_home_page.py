@@ -116,6 +116,10 @@ def esc(s):
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def slug(name):
+    return re.sub(r"[^a-z0-9]+", "-", str(name).lower()).strip("-")
+
+
 def fmt_score(v):
     if v is None:
         return ""
@@ -189,7 +193,9 @@ def team_block(name, score, other_score, played, logos):
     if played and score is not None and other_score is not None:
         cls += " winner" if score > other_score else " loser"
     score_html = f'<div class="score">{fmt_score(score)}</div>' if played and score is not None else ""
-    return f'<div class="{cls}"><div class="logo">{logo_html}</div><div class="name">{esc(name)}</div>{score_html}</div>'
+    inner = f'<div class="logo">{logo_html}</div><div class="name">{esc(name)}</div>{score_html}'
+    team_slug = slug(name)
+    return f'<a class="{cls}" href="team.html?team={team_slug}">{inner}</a>'
 
 
 def game_card(g, logos):
@@ -291,7 +297,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     position:sticky; top:0; z-index:100;
   }}
   .topbar-inner{{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}}
-  .topbar .site{{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}}
+  .topbar .site{{font-size:13px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}}
   .topbar .site strong{{color:var(--chalk); font-weight:600;}}
   .topbar .site .crumb{{color:var(--steel);}}
   .nav-desktop{{display:flex; gap:15px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}}
