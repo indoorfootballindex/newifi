@@ -487,8 +487,9 @@
     if (!team.logos || !team.logos.length) return '';
     var cards = team.logos.map(function(l){
       var badge = l.current ? '<span class="badge">Current</span>' : '';
+      var altText = l.caption ? (team.name + ' logo \u2014 ' + l.caption) : (team.name + ' logo');
       return '<div class="logo-card"><div class="badge-slot">' + badge + '</div>' +
-        '<div class="thumb"><img src="' + esc(l.url) + '" alt="' + esc(team.name) + ' logo" onerror="this.style.display=\'none\'"></div>' +
+        '<div class="thumb"><img src="' + esc(l.url) + '" alt="' + esc(altText) + '" style="cursor:pointer;" onclick="openLogoLightbox(this.src, this.alt)" onerror="this.style.display=\'none\'"></div>' +
         '<div class="caption">' + esc(l.caption||'') + '</div></div>';
     }).join('');
     return '<section><div class="section-head"><h2 class="display">Logo history</h2></div>' +
