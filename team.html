@@ -155,17 +155,23 @@
   .season-games .empty{padding:20px; text-align:center; font-size:13px; color:var(--steel); border:1px dashed var(--card-line); border-radius:10px;}
 
   .schedule{border:1px solid var(--card-line); border-radius:10px; overflow:hidden;}
-  .game-row{display:grid; grid-template-columns:96px 1fr 100px 64px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--steel-line); font-size:13px;}
+  .game-row{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--steel-line); font-size:13px; gap:16px;}
   .game-row:last-child{border-bottom:none;}
-  .game-row .date{color:var(--steel); font-size:11px;}
-  .game-row .opp{color:var(--chalk-dim);}
-  .game-row .score{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--chalk);}
-  .game-row .wl{text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:3px 0; border-radius:4px; margin-left:14px;}
+  .game-row .row-top{display:flex; align-items:center; gap:16px; flex:1; min-width:0;}
+  .game-row .row-bottom{display:flex; align-items:center; gap:14px; flex-shrink:0;}
+  .game-row .date{color:var(--steel); font-size:11px; flex:0 0 68px;}
+  .game-row .opp{color:var(--chalk-dim); flex:1; min-width:0;}
+  .game-row .score{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--chalk); min-width:60px;}
+  .game-row .wl{text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px;}
   .wl.w{background:rgba(60,110,71,0.25); color:#7fc492;}
   .wl.l{background:rgba(212,38,58,0.2); color:#f0919c;}
   .wl.t{background:rgba(232,163,61,0.2); color:var(--amber);}
   .game-row.playoff{background:rgba(232,163,61,0.05);}
   .game-row.playoff .date{color:var(--amber);}
+  @media (max-width:480px){
+    .game-row{flex-direction:column; align-items:stretch; gap:6px;}
+    .game-row .row-bottom{justify-content:flex-end;}
+  }
 
   .empty-state{padding:60px 24px; text-align:center; color:var(--steel);}
   .empty-state h1{color:var(--chalk); font-size:28px; margin-bottom:10px;}
@@ -218,23 +224,6 @@
     .mobile-search-bar input::placeholder{color:var(--steel);}
     .mobile-search-bar .icon{position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--steel); font-size:12px;}
     .mobile-search-bar .search-results{position:absolute; top:calc(100% + 6px); left:0; right:0; width:auto; margin:0; max-height:50vh; z-index:250;}
-  }
-
-  @media (max-width:480px){
-    .game-row{
-      display:grid;
-      grid-template-columns:auto 1fr auto;
-      grid-template-areas:
-        "date opp opp"
-        ".    score wl";
-      align-items:center;
-      row-gap:6px;
-      column-gap:10px;
-    }
-    .game-row .date{grid-area:date;}
-    .game-row .opp{grid-area:opp;}
-    .game-row .score{grid-area:score; text-align:right;}
-    .game-row .wl{grid-area:wl; justify-self:end; margin-left:0;}
   }
 </style>
 </head>
@@ -659,8 +648,10 @@
           gamesEl.innerHTML = '<div class="schedule">' + s.games.map(function(g){
             var wlClass = g.wl==='W'?'w':(g.wl==='T'?'t':'l');
             var rowClass = g.playoff ? ' playoff' : '';
-            return '<div class="game-row' + rowClass + '"><span class="date">' + g.date + '</span><span class="opp">' + esc(g.opp) + '</span>' +
-              '<span class="score mono">' + g.score + '</span><span class="wl ' + wlClass + '">' + g.wl + '</span></div>';
+            return '<div class="game-row' + rowClass + '">' +
+              '<div class="row-top"><span class="date">' + g.date + '</span><span class="opp">' + esc(g.opp) + '</span></div>' +
+              '<div class="row-bottom"><span class="score mono">' + g.score + '</span><span class="wl ' + wlClass + '">' + g.wl + '</span></div>' +
+              '</div>';
           }).join('') + '</div>';
         } else {
           gamesEl.innerHTML = '<div class="empty">No game-by-game box scores on file for this season.</div>';
