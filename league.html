@@ -41,7 +41,7 @@
     position:sticky; top:0; z-index:100;
   }
   .topbar-inner{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}
-  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
+  .topbar .site{font-size:13px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
   .topbar .site strong{color:var(--chalk); font-weight:600;}
   .nav-desktop{display:flex; gap:15px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
   .nav-desktop a:hover{color:var(--chalk);}
@@ -369,7 +369,7 @@
       if (!t.seasons) return;
       Object.keys(t.seasons).forEach(function(y){
         var s = t.seasons[y];
-        if (s.league === lg.acronym && s.games && s.games.length){
+        if (s.league === lg.acronym && ((s.games && s.games.length) || s.result)){
           yearSet[y] = true;
         }
       });
@@ -387,7 +387,7 @@
     var rows = [];
     teams.forEach(function(t){
       var s = t.seasons && t.seasons[year];
-      if (!s || s.league !== lg.acronym || !s.games || !s.games.length) return;
+      if (!s || s.league !== lg.acronym || (!(s.games && s.games.length) && !s.result)) return;
       var rec = parseRecord(s.reg);
       rows.push({
         name: s.name || t.name, slug: t.slug,

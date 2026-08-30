@@ -38,7 +38,7 @@
     position:sticky; top:0; z-index:100;
   }
   .topbar-inner{display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; padding:16px 32px; gap:20px;}
-  .topbar .site{font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
+  .topbar .site{font-size:13px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); white-space:nowrap; display:flex; align-items:center; gap:10px;}
   .topbar .site strong{color:var(--chalk); font-weight:600;}
   .nav-desktop{display:flex; gap:15px; font-size:11px; letter-spacing:0.03em; text-transform:uppercase; color:var(--steel); flex-wrap:wrap;}
   .nav-desktop a:hover{color:var(--chalk);}
@@ -347,7 +347,7 @@
     var rows = [];
     TEAMS.forEach(function(t){
       var s = t.seasons && t.seasons[year];
-      if (!s || !s.games || !s.games.length) return;
+      if (!s || (!(s.games && s.games.length) && !s.result)) return;
       if ((s.league || '') !== league) return;
       var rec = parseRecord(s.reg);
       rows.push({
@@ -451,7 +451,7 @@
         Object.keys(t.seasons).forEach(function(y){
           var s = t.seasons[y];
           if (!s.league) return;
-          if (!s.games || !s.games.length) return; // skip placeholder/future seasons with no games yet
+          if (!(s.games && s.games.length) && !s.result) return; // skip genuine placeholder/future seasons with no games and no recorded result
           if (!YEAR_LEAGUES[y]) YEAR_LEAGUES[y] = new Set();
           YEAR_LEAGUES[y].add(s.league);
         });
