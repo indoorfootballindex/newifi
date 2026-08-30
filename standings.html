@@ -71,7 +71,7 @@
     background-repeat:no-repeat; background-position:right 12px center;
   }
 
-  .standings-wrap{border:1px solid var(--card-line); border-radius:12px; overflow:hidden;}
+  .standings-wrap{border:1px solid var(--card-line); border-radius:12px; overflow-x:auto;}
   table{width:100%; border-collapse:collapse;}
   thead th{
     background:var(--arena-black-2); color:var(--chalk); text-align:left; font-size:11px; letter-spacing:0.08em;
@@ -85,7 +85,7 @@
   tbody tr.team-row{border-bottom:1px solid var(--steel-line);}
   tbody tr.team-row:hover td{background:rgba(255,255,255,0.02);}
   tbody tr.team-row:last-child{border-bottom:none;}
-  td{padding:14px 18px; font-size:14px;}
+  td{padding:14px 18px; font-size:14px; white-space:nowrap;}
   td.num{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--chalk-dim);}
   td.record{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--chalk); font-weight:600;}
   .team-cell{display:flex; align-items:center; gap:12px;}
