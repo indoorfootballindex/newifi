@@ -219,6 +219,23 @@
     .mobile-search-bar .icon{position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--steel); font-size:12px;}
     .mobile-search-bar .search-results{position:absolute; top:calc(100% + 6px); left:0; right:0; width:auto; margin:0; max-height:50vh; z-index:250;}
   }
+
+  @media (max-width:480px){
+    .game-row{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      grid-template-areas:
+        "date opp opp"
+        ".    score wl";
+      align-items:center;
+      row-gap:6px;
+      column-gap:10px;
+    }
+    .game-row .date{grid-area:date;}
+    .game-row .opp{grid-area:opp;}
+    .game-row .score{grid-area:score; text-align:right;}
+    .game-row .wl{grid-area:wl; justify-self:end; margin-left:0;}
+  }
 </style>
 </head>
 <body>
