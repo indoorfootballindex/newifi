@@ -465,10 +465,13 @@
 
     var bodyHtml = '<p>' + esc(lg.acronym) + ' \u2014 ' + rows.length + ' games played</p>';
 
-    var recBlockHtml = bestTeam
-      ? '<div class="rec-block"><div class="rv">' + esc(bestTeam.reg) + '</div><div class="rk">Best Record (' + esc(bestTeam.name) + ')</div>' +
-        (champion ? '<div class="po">Champion: ' + esc(champion) + '</div>' : '') + '</div>'
-      : '';
+    var recBlockHtml = '';
+    if (bestTeam || champion){
+      recBlockHtml = '<div class="rec-block">' +
+        (bestTeam ? '<div class="rv">' + esc(bestTeam.reg) + '</div><div class="rk">Best Record (' + esc(bestTeam.name) + ')</div>' : '') +
+        (champion ? '<div class="po">Champion: ' + esc(champion) + '</div>' : '') +
+        '</div>';
+    }
 
     var cardHtml = '<div class="season-panel"><div class="yr-big display">' + year + '</div><div class="body">' + bodyHtml + '</div>' + recBlockHtml + '</div>';
 
