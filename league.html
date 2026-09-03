@@ -148,7 +148,8 @@
   .game-row.playoff{background:rgba(232,163,61,0.05);}
   .game-row.playoff .date{color:var(--amber);}
   #schedule-panel .standings-wrap th{text-align:center;}
-  #schedule-panel .standings-wrap td{text-align:center; font-family:'IBM Plex Mono',monospace; color:var(--chalk-dim);}
+  #schedule-panel .standings-wrap td{text-align:center; color:var(--chalk-dim);}
+  #schedule-panel .standings-wrap td.score-cell{font-family:'IBM Plex Mono',monospace; color:var(--chalk);}
   @media (max-width:480px){
     .game-row{flex-direction:column; align-items:stretch; gap:6px;}
     .game-row .row-bottom{justify-content:flex-end;}
@@ -412,7 +413,7 @@
       '<div id="standings-panel"></div></section>' + hashes();
   }
 
-  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   function formatDate(iso){
     var parts = iso.split('-');
     var month = parseInt(parts[1], 10) - 1;
@@ -458,7 +459,7 @@
         winnerName = champGame.a; winnerScore = champGame.as;
         loserName = champGame.h; loserScore = champGame.hs;
       }
-      bodyText = winnerName + ' ' + winnerScore + '\u2013' + loserScore + ' ' + loserName;
+      bodyText = 'Champion: ' + winnerName + ' ' + winnerScore + '\u2013' + loserScore + ' ' + loserName;
     }
     var bodyHtml = bodyText ? '<p>' + esc(bodyText) + '</p>' : '';
 
@@ -473,7 +474,7 @@
         if (g.hs > g.as) homeName = '<strong style="color:var(--accent-green);">' + homeName + '</strong>';
         else if (g.as > g.hs) awayName = '<strong style="color:var(--accent-green);">' + awayName + '</strong>';
       }
-      return '<tr' + rowClass + '><td>' + formatDate(g.d) + tag + '</td><td>' + homeName + '</td><td>' + scoreText + '</td><td>' + awayName + '</td></tr>';
+      return '<tr' + rowClass + '><td>' + formatDate(g.d) + tag + '</td><td>' + homeName + '</td><td class="score-cell">' + scoreText + '</td><td>' + awayName + '</td></tr>';
     }).join('');
 
     panel.innerHTML = cardHtml +
