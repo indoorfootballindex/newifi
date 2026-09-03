@@ -126,8 +126,31 @@
   .standings-wrap td{padding:12px 16px; font-size:13px; white-space:nowrap;}
   .standings-wrap td.num{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--chalk-dim);}
   .standings-wrap td.record{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--chalk); font-weight:600;}
-  #schedule-panel .standings-wrap th{text-align:center;}
-  #schedule-panel .standings-wrap td{text-align:center; font-family:'IBM Plex Mono',monospace; color:var(--chalk-dim);}
+  .season-panel{border:1px solid var(--card-line); border-radius:10px; background:var(--card); padding:22px 26px; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:22px;}
+  .season-panel .yr-big{font-size:36px; color:var(--chalk); line-height:1;}
+  .season-panel .body p{margin:0; font-size:13px; color:var(--chalk-dim); line-height:1.6;}
+  .season-panel .rec-block{text-align:right;}
+  .season-panel .rec-block .rv{font-size:22px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+  .season-panel .rec-block .rk{font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--steel); margin-top:3px;}
+  .season-panel .rec-block .po{font-size:11px; color:var(--turf); margin-top:6px; font-family:'IBM Plex Mono',monospace;}
+  @media (max-width:700px){.season-panel{grid-template-columns:1fr; text-align:left;} .season-panel .rec-block{text-align:left;}}
+  .season-games{margin-top:14px;}
+  .season-games .no-data{padding:20px; text-align:center; font-size:13px; color:var(--steel); border:1px dashed var(--card-line); border-radius:10px;}
+
+  .schedule{border:1px solid var(--card-line); border-radius:10px; overflow:hidden;}
+  .game-row{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--steel-line); font-size:13px; gap:16px;}
+  .game-row:last-child{border-bottom:none;}
+  .game-row .row-top{display:flex; align-items:center; gap:16px; flex:1; min-width:0;}
+  .game-row .row-bottom{display:flex; align-items:center; gap:14px; flex-shrink:0;}
+  .game-row .date{color:var(--steel); font-size:11px; flex:0 0 90px;}
+  .game-row .opp{color:var(--chalk-dim); flex:1; min-width:0;}
+  .game-row .score{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--chalk); min-width:60px;}
+  .game-row.playoff{background:rgba(232,163,61,0.05);}
+  .game-row.playoff .date{color:var(--amber);}
+  @media (max-width:480px){
+    .game-row{flex-direction:column; align-items:stretch; gap:6px;}
+    .game-row .row-bottom{justify-content:flex-end;}
+  }
   .standings-team{display:flex; align-items:center; gap:10px;}
   .standings-team .logo{width:28px; height:28px; border-radius:6px; background:var(--arena-black-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;}
   .standings-team .logo img{width:100%; height:100%; object-fit:contain; padding:3px;}
@@ -387,6 +410,14 @@
       '<div id="standings-panel"></div></section>' + hashes();
   }
 
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function formatDate(iso){
+    var parts = iso.split('-');
+    var month = parseInt(parts[1], 10) - 1;
+    var day = parseInt(parts[2], 10);
+    return MONTHS[month] + ' ' + (day < 10 ? '0' : '') + day;
+  }
+
   function buildScheduleSection(lg, games){
     var years = {};
     games.forEach(function(g){
@@ -401,7 +432,7 @@
       '<div id="schedule-panel"></div></section>' + hashes();
   }
 
-  function renderScheduleYear(lg, games, year){
+  function renderScheduleYear(lg, teams, games, year){
     var rows = games.filter(function(g){ return g.lg === lg.acronym && g.d.slice(0,4) === year; });
     rows.sort(function(a,b){ return a.d < b.d ? -1 : 1; });
 
@@ -411,15 +442,46 @@
       return;
     }
 
-    var html = '<div class="standings-wrap"><table><thead><tr><th>Date</th><th>Week</th><th>Home</th><th>Away</th><th>Score</th></tr></thead><tbody>';
-    rows.forEach(function(g){
-      var tag = g.ch ? ' <span style="color:var(--amber);">CH</span>' : (g.po ? ' <span style="color:var(--amber);">PO</span>' : '');
-      var scoreText = g.p ? (g.hs + '\u2013' + g.as) : 'TBD';
-      html += '<tr><td>' + esc(g.d) + '</td><td>' + esc(g.wk||'') + tag + '</td>' +
-        '<td>' + esc(g.h) + '</td><td>' + esc(g.a) + '</td><td>' + scoreText + '</td></tr>';
+    // Best regular-season record and the champion (a team whose result
+    // reads "Won ... Championship") — the league-wide equivalent of a
+    // single team's own record/result on their own season card.
+    var candidates = [];
+    var champion = null;
+    teams.forEach(function(t){
+      var s = t.seasons && t.seasons[year];
+      if (!s || s.league !== lg.acronym) return;
+      if (s.games && s.games.length){
+        var rec = parseRecord(s.reg);
+        candidates.push({name: s.name || t.name, w: rec.w, l: rec.l, reg: s.reg});
+      }
+      if (s.result && /won/i.test(s.result) && /championship/i.test(s.result)){
+        champion = s.name || t.name;
+      }
     });
-    html += '</tbody></table></div>';
-    panel.innerHTML = html;
+    candidates.sort(function(a,b){ return b.w - a.w || a.l - b.l; });
+    var bestTeam = candidates[0];
+
+    var bodyHtml = '<p>' + esc(lg.acronym) + ' \u2014 ' + rows.length + ' games played</p>';
+
+    var recBlockHtml = bestTeam
+      ? '<div class="rec-block"><div class="rv">' + esc(bestTeam.reg) + '</div><div class="rk">Best Record (' + esc(bestTeam.name) + ')</div>' +
+        (champion ? '<div class="po">Champion: ' + esc(champion) + '</div>' : '') + '</div>'
+      : '';
+
+    var cardHtml = '<div class="season-panel"><div class="yr-big display">' + year + '</div><div class="body">' + bodyHtml + '</div>' + recBlockHtml + '</div>';
+
+    var rowsHtml = rows.map(function(g){
+      var rowClass = g.po ? ' playoff' : '';
+      var tag = g.ch ? ' \u00b7 CH' : (g.po ? ' \u00b7 PO' : '');
+      var scoreText = g.p ? (g.hs + '\u2013' + g.as) : 'TBD';
+      var matchupText = g.h + ' vs ' + g.a;
+      return '<div class="game-row' + rowClass + '">' +
+        '<div class="row-top"><span class="date">' + formatDate(g.d) + tag + '</span><span class="opp">' + esc(matchupText) + '</span></div>' +
+        '<div class="row-bottom"><span class="score mono">' + scoreText + '</span></div>' +
+      '</div>';
+    }).join('');
+
+    panel.innerHTML = cardHtml + '<div class="season-games"><div class="schedule">' + rowsHtml + '</div></div>';
   }
 
   function renderStandingsYear(lg, teams, year){
@@ -532,8 +594,8 @@
 
     var scheduleYearSelect = document.getElementById('schedule-year');
     if (scheduleYearSelect){
-      scheduleYearSelect.addEventListener('change', function(){ renderScheduleYear(lg, games, this.value); });
-      renderScheduleYear(lg, games, scheduleYearSelect.value);
+      scheduleYearSelect.addEventListener('change', function(){ renderScheduleYear(lg, teams, games, this.value); });
+      renderScheduleYear(lg, teams, games, scheduleYearSelect.value);
     }
 
     var seasonSelect = document.getElementById('season-select');
