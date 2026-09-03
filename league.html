@@ -126,7 +126,7 @@
   .standings-wrap td{padding:12px 16px; font-size:13px; white-space:nowrap;}
   .standings-wrap td.num{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--chalk-dim);}
   .standings-wrap td.record{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--chalk); font-weight:600;}
-  .season-panel{border:1px solid var(--card-line); border-radius:10px; background:var(--card); padding:22px 26px; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:22px;}
+  .season-panel{border:1px solid var(--card-line); border-radius:10px; background:var(--card); padding:22px 26px; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:22px;}
   .season-panel .yr-big{font-size:36px; color:var(--chalk); line-height:1;}
   .season-panel .body p{margin:0; font-size:13px; color:var(--chalk-dim); line-height:1.6;}
   .season-panel .rec-block{text-align:right;}
@@ -444,36 +444,25 @@
       return;
     }
 
-    // Best regular-season record and the champion (a team whose result
-    // reads "Won ... Championship") — the league-wide equivalent of a
-    // single team's own record/result on their own season card.
-    var candidates = [];
-    var champion = null;
-    teams.forEach(function(t){
-      var s = t.seasons && t.seasons[year];
-      if (!s || s.league !== lg.acronym) return;
-      if (s.games && s.games.length){
-        var rec = parseRecord(s.reg);
-        candidates.push({name: s.name || t.name, w: rec.w, l: rec.l, reg: s.reg});
+    // The championship game itself already tells us who won and by what
+    // score — no need to parse anything from team result text. Winner is
+    // always listed first, regardless of whether they were home or away.
+    var champGame = rows.find(function(g){ return g.ch && g.p; });
+    var bodyText = '';
+    if (champGame){
+      var winnerName, winnerScore, loserName, loserScore;
+      if (champGame.hs > champGame.as){
+        winnerName = champGame.h; winnerScore = champGame.hs;
+        loserName = champGame.a; loserScore = champGame.as;
+      } else {
+        winnerName = champGame.a; winnerScore = champGame.as;
+        loserName = champGame.h; loserScore = champGame.hs;
       }
-      if (s.result && /won/i.test(s.result) && /championship/i.test(s.result)){
-        champion = s.name || t.name;
-      }
-    });
-    candidates.sort(function(a,b){ return b.w - a.w || a.l - b.l; });
-    var bestTeam = candidates[0];
-
-    var bodyHtml = '<p>' + esc(lg.acronym) + ' \u2014 ' + rows.length + ' games played</p>';
-
-    var recBlockHtml = '';
-    if (bestTeam || champion){
-      recBlockHtml = '<div class="rec-block">' +
-        (bestTeam ? '<div class="rv">' + esc(bestTeam.reg) + '</div><div class="rk">Best Record (' + esc(bestTeam.name) + ')</div>' : '') +
-        (champion ? '<div class="po">Champion: ' + esc(champion) + '</div>' : '') +
-        '</div>';
+      bodyText = winnerName + ' ' + winnerScore + '\u2013' + loserScore + ' ' + loserName;
     }
+    var bodyHtml = bodyText ? '<p>' + esc(bodyText) + '</p>' : '';
 
-    var cardHtml = '<div class="season-panel"><div class="yr-big display">' + year + '</div><div class="body">' + bodyHtml + '</div>' + recBlockHtml + '</div>';
+    var cardHtml = '<div class="season-panel"><div class="yr-big display">' + year + '</div><div class="body">' + bodyHtml + '</div></div>';
 
     var rowsHtml = rows.map(function(g){
       var rowClass = g.po ? ' style="background:rgba(232,163,61,0.05);"' : '';
