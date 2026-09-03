@@ -147,6 +147,8 @@
   .game-row .score{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--chalk); min-width:60px;}
   .game-row.playoff{background:rgba(232,163,61,0.05);}
   .game-row.playoff .date{color:var(--amber);}
+  #schedule-panel .standings-wrap th{text-align:center;}
+  #schedule-panel .standings-wrap td{text-align:center; font-family:'IBM Plex Mono',monospace; color:var(--chalk-dim);}
   @media (max-width:480px){
     .game-row{flex-direction:column; align-items:stretch; gap:6px;}
     .game-row .row-bottom{justify-content:flex-end;}
@@ -471,17 +473,20 @@
     var cardHtml = '<div class="season-panel"><div class="yr-big display">' + year + '</div><div class="body">' + bodyHtml + '</div>' + recBlockHtml + '</div>';
 
     var rowsHtml = rows.map(function(g){
-      var rowClass = g.po ? ' playoff' : '';
-      var tag = g.ch ? ' \u00b7 CH' : (g.po ? ' \u00b7 PO' : '');
-      var scoreText = g.p ? (g.hs + '\u2013' + g.as) : 'TBD';
-      var matchupText = g.h + ' vs ' + g.a;
-      return '<div class="game-row' + rowClass + '">' +
-        '<div class="row-top"><span class="date">' + formatDate(g.d) + tag + '</span><span class="opp">' + esc(matchupText) + '</span></div>' +
-        '<div class="row-bottom"><span class="score mono">' + scoreText + '</span></div>' +
-      '</div>';
+      var rowClass = g.po ? ' style="background:rgba(232,163,61,0.05);"' : '';
+      var tag = g.ch ? ' <span style="color:var(--amber);">CH</span>' : (g.po ? ' <span style="color:var(--amber);">PO</span>' : '');
+      var homeName = esc(g.h), awayName = esc(g.a), scoreText = 'TBD';
+      if (g.p){
+        scoreText = g.hs + '\u2013' + g.as;
+        if (g.hs > g.as) homeName = '<strong style="color:var(--accent-green);">' + homeName + '</strong>';
+        else if (g.as > g.hs) awayName = '<strong style="color:var(--accent-green);">' + awayName + '</strong>';
+      }
+      return '<tr' + rowClass + '><td>' + formatDate(g.d) + tag + '</td><td>' + homeName + '</td><td>' + scoreText + '</td><td>' + awayName + '</td></tr>';
     }).join('');
 
-    panel.innerHTML = cardHtml + '<div class="season-games"><div class="schedule">' + rowsHtml + '</div></div>';
+    panel.innerHTML = cardHtml +
+      '<div class="standings-wrap" style="margin-top:14px;"><table><thead><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th></tr></thead>' +
+      '<tbody>' + rowsHtml + '</tbody></table></div>';
   }
 
   function renderStandingsYear(lg, teams, year){
