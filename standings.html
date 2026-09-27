@@ -413,7 +413,8 @@
       confOrder.forEach(function(conf){
         var teamRows = byConf[conf].slice().sort(function(a,b){
           if (b.w !== a.w) return b.w - a.w;
-          return a.l - b.l;
+          if (a.l !== b.l) return a.l - b.l;
+          return a.name.localeCompare(b.name);
         });
         html += '<tr class="conf-row"><td colspan="' + colCount + '">' + esc(conf) + '</td></tr>';
         teamRows.forEach(function(r){ html += rowHtml(r); });
@@ -421,7 +422,8 @@
     } else {
       var allRows = rows.slice().sort(function(a,b){
         if (b.w !== a.w) return b.w - a.w;
-        return a.l - b.l;
+        if (a.l !== b.l) return a.l - b.l;
+        return a.name.localeCompare(b.name);
       });
       allRows.forEach(function(r){ html += rowHtml(r); });
     }

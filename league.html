@@ -530,12 +530,12 @@
       (showResult ? '<th>Result</th>' : '') + '</tr></thead><tbody>';
     if (hasRealConferences){
       confOrder.forEach(function(conf){
-        var teamRows = byConf[conf].slice().sort(function(a,b){ return b.w - a.w || a.l - b.l; });
+        var teamRows = byConf[conf].slice().sort(function(a,b){ return b.w - a.w || a.l - b.l || a.name.localeCompare(b.name); });
         html += '<tr class="conf-row"><td colspan="' + colCount + '">' + esc(conf) + '</td></tr>';
         teamRows.forEach(function(r){ html += rowHtml(r); });
       });
     } else {
-      var allRows = rows.slice().sort(function(a,b){ return b.w - a.w || a.l - b.l; });
+      var allRows = rows.slice().sort(function(a,b){ return b.w - a.w || a.l - b.l || a.name.localeCompare(b.name); });
       allRows.forEach(function(r){ html += rowHtml(r); });
     }
     html += '</tbody></table></div>';
