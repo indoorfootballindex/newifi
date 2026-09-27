@@ -424,7 +424,7 @@
   function buildScheduleSection(lg, games){
     var years = {};
     games.forEach(function(g){
-      if (g.lg === lg.acronym) years[g.d.slice(0,4)] = true;
+      if (g.lg === lg.acronym) years[g.yr] = true;
     });
     var yearList = Object.keys(years).sort(function(a,b){ return b-a; });
     if (!yearList.length) return '';
@@ -436,7 +436,7 @@
   }
 
   function renderScheduleYear(lg, teams, games, year){
-    var rows = games.filter(function(g){ return g.lg === lg.acronym && g.d.slice(0,4) === year; });
+    var rows = games.filter(function(g){ return g.lg === lg.acronym && g.yr === year; });
     rows.sort(function(a,b){ return a.d < b.d ? -1 : 1; });
 
     var panel = document.getElementById('schedule-panel');

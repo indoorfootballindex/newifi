@@ -453,7 +453,7 @@
     return '<div class="' + cardCls + '">' +
       '<div class="game-card-head"><span class="date">' + esc(fmtDate(g.d)) + (g.dow ? ' &middot; ' + esc(g.dow) : '') + '</span><span class="league">' + esc(g.lg||'') + '</span></div>' +
       statusHtml +
-      '<div class="matchup">' + teamBlock(g.a, g.as, g.hs, g.p, g.d.slice(0,4)) + '<span class="vs-sep">@</span>' + teamBlock(g.h, g.hs, g.as, g.p, g.d.slice(0,4)) + '</div>' +
+      '<div class="matchup">' + teamBlock(g.a, g.as, g.hs, g.p, g.yr) + '<span class="vs-sep">@</span>' + teamBlock(g.h, g.hs, g.as, g.p, g.yr) + '</div>' +
       '<div class="game-card-foot">' + watchHtml + '<span class="week-label">' + esc(weekLabel) + '</span></div>' +
     '</div>';
   }
@@ -469,7 +469,7 @@
     filtered = ALL_GAMES.filter(function(g){
       if (team && g.h.toLowerCase().indexOf(team) === -1 && g.a.toLowerCase().indexOf(team) === -1) return false;
       if (league && g.lg !== league) return false;
-      if (year && g.d.slice(0,4) !== year) return false;
+      if (year && g.yr !== year) return false;
       if (week && g.wk !== week) return false;
       if (show === 'upcoming' && (g.p || g.d < today)) return false;
       if (show === 'past' && !g.p) return false;
@@ -557,7 +557,7 @@
     var leagues = [], years = [], weeks = [];
     ALL_GAMES.forEach(function(g){
       if (g.lg && leagues.indexOf(g.lg) === -1) leagues.push(g.lg);
-      var y = g.d.slice(0,4);
+      var y = g.yr;
       if (years.indexOf(y) === -1) years.push(y);
       if (g.wk && weeks.indexOf(g.wk) === -1) weeks.push(g.wk);
     });

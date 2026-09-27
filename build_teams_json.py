@@ -166,9 +166,17 @@ def load_schedule_by_team(wb, team_names):
             continue
         week = r[idx["Week"]] if "Week" in idx else None
         week_low = str(week).lower()
-        is_championship = "championship" in week_low
+        is_championship = any(k in week_low for k in ("championship", "bowl", "cup"))
         is_playoff = is_championship or any(k in week_low for k in ("playoff", "semifinal", "quarterfinal"))
-        year = str(date.year)
+        # For most leagues the game's own calendar year is also its season
+        # label. Winter-ball leagues break that assumption — a season's
+        # playoffs can land in January of the following calendar year and
+        # still belong to the season before it. An optional "Season" column
+        # on the Schedule tab lets you override the year explicitly for
+        # exactly those rows; every other row keeps working exactly as before.
+        season_col = idx.get("Season")
+        season_override = r[season_col] if season_col is not None and season_col < len(r) else None
+        year = str(int(season_override)) if season_override not in (None, "") else str(date.year)
 
         for team_name, is_home in ((cur_home, True), (cur_away, False)):
             if team_name not in team_names:

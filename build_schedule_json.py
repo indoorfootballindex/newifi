@@ -79,9 +79,17 @@ def main():
         # any of those patterns as a championship game.
         is_championship = any(k in week_low for k in ("championship", "bowl", "cup"))
         is_playoff = is_championship or any(k in week_low for k in ("playoff", "semifinal", "quarterfinal"))
+        # Winter-ball leagues can have a season's playoffs land in January of
+        # the following calendar year while still belonging to the season
+        # before it. An optional "Season" column overrides the plain
+        # calendar year from the date for exactly those rows.
+        season_col = idx.get("Season")
+        season_override = r[season_col] if season_col is not None and season_col < len(r) else None
+        yr = str(int(season_override)) if season_override not in (None, "") else str(date.year)
 
         games.append({
             "d": date.strftime("%Y-%m-%d"),
+            "yr": yr,
             "dow": r[idx["Day of the Week"]] if "Day of the Week" in idx else None,
             "h": home,
             "a": away,
