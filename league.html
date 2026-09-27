@@ -399,7 +399,7 @@
       if (!t.seasons) return;
       Object.keys(t.seasons).forEach(function(y){
         var s = t.seasons[y];
-        if (s.league === lg.acronym && ((s.games && s.games.length) || s.result)){
+        if (s.league === lg.acronym){
           yearSet[y] = true;
         }
       });
@@ -486,7 +486,7 @@
     var rows = [];
     teams.forEach(function(t){
       var s = t.seasons && t.seasons[year];
-      if (!s || s.league !== lg.acronym || (!(s.games && s.games.length) && !s.result)) return;
+      if (!s || s.league !== lg.acronym) return;
       var rec = parseRecord(s.reg);
       rows.push({
         name: s.name || t.name, slug: t.slug,

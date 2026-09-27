@@ -349,7 +349,7 @@
     var rows = [];
     TEAMS.forEach(function(t){
       var s = t.seasons && t.seasons[year];
-      if (!s || (!(s.games && s.games.length) && !s.result)) return;
+      if (!s || !s.league) return;
       if ((s.league || '') !== league) return;
       var rec = parseRecord(s.reg);
       rows.push({
@@ -453,7 +453,6 @@
         Object.keys(t.seasons).forEach(function(y){
           var s = t.seasons[y];
           if (!s.league) return;
-          if (!(s.games && s.games.length) && !s.result) return; // skip genuine placeholder/future seasons with no games and no recorded result
           if (!YEAR_LEAGUES[y]) YEAR_LEAGUES[y] = new Set();
           YEAR_LEAGUES[y].add(s.league);
         });
